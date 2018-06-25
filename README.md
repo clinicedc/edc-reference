@@ -1,8 +1,12 @@
 # edc-reference
 
-[![Build Status](https://travis-ci.org/botswana-harvard/edc-reference.svg?branch=develop)](https://travis-ci.org/botswana-harvard/edc-reference) [![Coverage Status](https://coveralls.io/repos/github/botswana-harvard/edc-reference/badge.svg?branch=develop)](https://coveralls.io/github/botswana-harvard/edc-reference?branch=develop)
+[![Build Status](https://travis-ci.com/clinicedc/edc-reference.svg?branch=develop)](https://travis-ci.com/clinicedc/edc-reference) [![Coverage Status](https://coveralls.io/repos/github/clinicedc/edc-reference/badge.svg?branch=develop)](https://coveralls.io/github/clinicedc/edc-reference?branch=develop)
 
-pivoted reference table for edc modules
+pivoted reference table for EDC modules
+
+`edc_reference` creates a pivoted table of CRF and Requisition records with a small subset of values that can be efficiently referenced. The module is used by `edc_metadata_rules` to quickly determine if a CRF or Requisition model instance exists avoiding the need to query each individual model class.
+
+See also `edc_metadata_rules`
 
 
 ## Usage and Configuration
