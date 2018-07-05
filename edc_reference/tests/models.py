@@ -1,9 +1,9 @@
 from django.db import models
 from django.db.models.deletion import PROTECT
-
 from edc_base.model_mixins import BaseUuidModel
 from edc_base.utils import get_utcnow
 from edc_lab.models.model_mixins import PanelModelMixin
+from edc_visit_tracking.model_mixins import VisitModelMixin
 
 from ..model_mixins import ReferenceModelMixin, RequisitionReferenceModelMixin
 
@@ -18,7 +18,7 @@ class CrfModelMixin(models.Model):
         abstract = True
 
 
-class SubjectVisit(ReferenceModelMixin, BaseUuidModel):
+class SubjectVisit(VisitModelMixin, ReferenceModelMixin, BaseUuidModel):
 
     subject_identifier = models.CharField(max_length=50)
 
