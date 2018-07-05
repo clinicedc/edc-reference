@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'edc_device.apps.AppConfig',
     'edc_lab.apps.AppConfig',
+    'edc_appointment.apps.AppConfig',
+    'edc_metadata.apps.AppConfig',
     'edc_reference.apps.AppConfig',
 ]
 
@@ -127,6 +129,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 GIT_DIR = BASE_DIR
 EDC_SYNC_SERVER_IP = None
+
+DASHBOARD_URL_NAMES = {}
 
 if 'test' in sys.argv:
 

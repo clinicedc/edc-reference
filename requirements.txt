@@ -21,3 +21,7 @@ git+https://github.com/clinicedc/edc-reference@develop#egg=edc-reference
 git+https://github.com/clinicedc/edc-model-admin@develop#egg=edc-model-admin
 git+https://github.com/clinicedc/edc-form-validators@develop#egg=edc-form-validators
 git+https://github.com/clinicedc/edc-model-fields@develop#egg=edc-model-fields
+git+https://github.com/clinicedc/edc-search@develop#egg=edc-search
+git+https://github.com/clinicedc/edc-fieldsets@develop#egg=edc-fieldsets
+git+https://github.com/clinicedc/edc-visit-tracking@develop#egg=edc-visit-tracking
+git+https://github.com/clinicedc/edc-appointment@develop#egg=edc-appointment
