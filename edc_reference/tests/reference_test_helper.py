@@ -33,8 +33,10 @@ class ReferenceTestHelper:
     def filter(self, **kwargs):
         return self.reference_model_cls.objects.filter(**kwargs)
 
-    def create_for_model(self, reference_name=None, report_datetime=None, visit_code=None, **options):
-        for field_name in site_reference_configs.get_fields(name=reference_name):
+    def create_for_model(self, reference_name=None, report_datetime=None,
+                         visit_code=None, **options):
+        for field_name in site_reference_configs.get_fields(
+                name=reference_name):
             reference = self.reference_model_cls.objects.create(
                 model=reference_name,
                 identifier=self.subject_identifier,
@@ -65,7 +67,8 @@ class ReferenceTestHelper:
             model=reference_name, identifier=self.subject_identifier,
             report_datetime=report_datetime)
 
-    def update_for_model(self, reference_name=None, report_datetime=None, visit_code=None,
+    def update_for_model(self, reference_name=None,
+                         report_datetime=None, visit_code=None,
                          valueset=None):
         for field_name, internal_type, value in valueset:
             try:

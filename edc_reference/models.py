@@ -3,6 +3,7 @@ from edc_base.model_mixins import BaseUuidModel
 from edc_base.sites import CurrentSiteManager, SiteModelMixin
 
 from .managers import ReferenceManager
+from django.conf import settings
 
 
 class ReferenceFieldDatatypeNotFound(Exception):
@@ -100,3 +101,7 @@ class Reference(SiteModelMixin, BaseUuidModel):
                 fields=['identifier', 'report_datetime', 'timepoint', 'model']),
             models.Index(fields=['report_datetime', 'timepoint']),
         ]
+
+
+if settings.APP_NAME == 'edc_reference':
+    from .tests.models import *
