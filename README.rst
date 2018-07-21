@@ -1,18 +1,23 @@
-# edc-reference
+|pypi| |travis| |coverage|
 
-[![Build Status](https://travis-ci.com/clinicedc/edc-reference.svg?branch=develop)](https://travis-ci.com/clinicedc/edc-reference) [![Coverage Status](https://coveralls.io/repos/github/clinicedc/edc-reference/badge.svg?branch=develop)](https://coveralls.io/github/clinicedc/edc-reference?branch=develop)
+
+edc-reference
+-------------
 
 Pivoted reference table for EDC modules
 
-`edc_reference` creates a pivoted table of CRF and Requisition records with a small subset of values that can be efficiently referenced. The module is used by `edc_metadata_rules` to quickly determine if a CRF or Requisition model instance exists avoiding the need to query each individual model class.
+``edc_reference`` creates a pivoted table of CRF and Requisition records with a small subset of values that can be efficiently referenced. The module is used by ``edc_metadata_rules`` to quickly determine if a CRF or Requisition model instance exists avoiding the need to query each individual model class.
 
-See also `edc_metadata_rules`
+See also ``edc_metadata_rules``
 
 
-## Usage and Configuration
+Usage and Configuration
+=======================
 
-Declare a model with the `ReferenceModelMixin`.
+Declare a model with the ``ReferenceModelMixin``.
 
+.. code-block:: python
+    
     from edc_reference.model_mixins import ReferenceModelMixin
 
     class CrfOne(ReferenceModelMixin, BaseUuidModel):
@@ -30,8 +35,10 @@ Declare a model with the `ReferenceModelMixin`.
         f4 = models.DatetimeField(null=True)
 
         
-Register the model and the relevant fields with the site global, `site_reference_configs`:
+Register the model and the relevant fields with the site global, ``site_reference_configs``:
 
+.. code-block:: python
+    
     from edc_reference.site import ReferenceModelConfig
 
     reference = ReferenceModelConfig(
@@ -41,14 +48,18 @@ Register the model and the relevant fields with the site global, `site_reference
         
 Create a model instance:
 
+.. code-block:: python
+    
     crf_one = CrfOne.objects.create(
         subject_visit=subject_visit,
         f1='happiness'
         f4=get_utcnow())
         
-The `Reference` model will be updated:
+The ``Reference`` model will be updated:
 
 
+.. code-block:: python
+    
     from edc_reference.models import Reference
     
     reference = Reference.objects.get(
@@ -72,13 +83,17 @@ The `Reference` model will be updated:
      ...}    
  
  
-Get the `value` from the reference instance:
+Get the ``value`` from the reference instance:
  
+.. code-block:: python
+    
     >>> reference.value
     'happiness'
     
 Model managers methods are also available, for example:
 
+.. code-block:: python
+    
     reference = Reference.objects.crf_get_for_visit(
         model='edc_reference.crfone', 
         visit=self.subject_visit,
@@ -88,8 +103,18 @@ Model managers methods are also available, for example:
     'happiness'
      
  
-### Accessing pivoted data with `LongitudinalRefset`
+Accessing pivoted data with ``LongitudinalRefset``
+===============================================
 
-
+ TODO
 
     
+
+.. |pypi| image:: https://img.shields.io/pypi/v/edc-reference.svg
+    :target: https://pypi.python.org/pypi/edc-reference
+    
+.. |travis| image:: https://travis-ci.org/clinicedc/edc-reference.svg?branch=develop
+    :target: https://travis-ci.org/clinicedc/edc-reference
+    
+.. |coverage| image:: https://coveralls.io/repos/github/clinicedc/edc-reference/badge.svg?branch=develop
+    :target: https://coveralls.io/github/clinicedc/edc-reference?branch=develop
