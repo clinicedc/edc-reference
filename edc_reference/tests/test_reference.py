@@ -1,5 +1,3 @@
-from uuid import uuid4
-
 from datetime import date
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ObjectDoesNotExist

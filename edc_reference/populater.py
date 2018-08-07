@@ -2,8 +2,8 @@ import arrow
 import sys
 
 from django.apps import apps as django_apps
-from edc_reference.models import Reference
 
+from .models import Reference
 from .reference import ReferenceUpdater
 from .site import site_reference_configs
 

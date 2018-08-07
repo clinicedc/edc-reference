@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
-
-from edc_reference.populater import Populater
 from edc_constants.constants import YES, NO
+
+from ...populater import Populater
 
 
 class Command(BaseCommand):
