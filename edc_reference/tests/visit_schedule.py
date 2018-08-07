@@ -1,8 +1,7 @@
+from dateutil.relativedelta import relativedelta
 from edc_visit_schedule.schedule import Schedule
 from edc_visit_schedule.visit import FormsCollection, Crf, Visit
 from edc_visit_schedule.visit_schedule import VisitSchedule
-
-from dateutil.relativedelta import relativedelta
 
 
 crfs = FormsCollection(

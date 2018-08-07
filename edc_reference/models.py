@@ -1,9 +1,9 @@
+from django.conf import settings
 from django.db import models
 from edc_base.model_mixins import BaseUuidModel
 from edc_base.sites import CurrentSiteManager, SiteModelMixin
 
 from .managers import ReferenceManager
-from django.conf import settings
 
 
 class ReferenceFieldDatatypeNotFound(Exception):

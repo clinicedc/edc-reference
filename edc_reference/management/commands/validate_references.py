@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
-from edc_reference.site import site_reference_configs
+
+from ...site import site_reference_configs
 
 
 class Command(BaseCommand):

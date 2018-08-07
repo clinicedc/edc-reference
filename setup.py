@@ -25,6 +25,11 @@ setup(
     long_description=README,
     zip_safe=False,
     keywords='django edc reference model',
+    install_requires=[
+        'edc-base',
+        'edc-lab',
+        'edc_visit_schedule',
+    ],
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',

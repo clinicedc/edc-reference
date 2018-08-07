@@ -1,8 +1,6 @@
 from dateutil.relativedelta import relativedelta
-
 from django.test import TestCase, tag
-
-from edc_base.utils import get_utcnow
+from edc_base import get_utcnow
 
 from ..models import Reference
 from ..reference_model_config import ReferenceModelConfig
