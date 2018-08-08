@@ -28,7 +28,7 @@ setup(
     install_requires=[
         'edc-base',
         'edc-lab',
-        'edc_visit_schedule',
+        'edc-visit-schedule',
     ],
     classifiers=[
         'Environment :: Web Environment',
