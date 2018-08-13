@@ -1,3 +1,5 @@
+import sys
+
 from django.conf import settings
 from django.db import models
 from edc_base.model_mixins import BaseUuidModel
@@ -92,16 +94,16 @@ class Reference(SiteModelMixin, BaseUuidModel):
     class Meta:
         unique_together = ['identifier', 'timepoint',
                            'report_datetime', 'model', 'field_name']
-        index_together = ['identifier', 'timepoint',
-                          'report_datetime', 'model', 'field_name']
         ordering = ('identifier', 'report_datetime')
         indexes = [
+            models.Index(fields=['identifier', 'timepoint',
+                                 'report_datetime', 'model', 'field_name']),
             models.Index(fields=['identifier', 'timepoint', 'model']),
             models.Index(
-                fields=['identifier', 'report_datetime', 'timepoint', 'model']),
-            models.Index(fields=['report_datetime', 'timepoint']),
+                fields=['identifier', 'timepoint', 'report_datetime', 'model']),
+            models.Index(fields=['timepoint', 'report_datetime']),
         ]
 
 
-if settings.APP_NAME == 'edc_reference':
+if settings.APP_NAME == 'edc_reference' and 'makemigrations' not in sys.argv:
     from .tests.models import *
