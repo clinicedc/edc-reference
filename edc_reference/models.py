@@ -1,3 +1,5 @@
+import sys
+
 from django.conf import settings
 from django.db import models
 from edc_base.model_mixins import BaseUuidModel
@@ -103,5 +105,5 @@ class Reference(SiteModelMixin, BaseUuidModel):
         ]
 
 
-if settings.APP_NAME == 'edc_reference':
+if settings.APP_NAME == 'edc_reference' and 'makemigrations' not in sys.argv:
     from .tests.models import *
