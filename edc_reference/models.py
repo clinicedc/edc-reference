@@ -92,14 +92,14 @@ class Reference(SiteModelMixin, BaseUuidModel):
     class Meta:
         unique_together = ['identifier', 'timepoint',
                            'report_datetime', 'model', 'field_name']
-        index_together = ['identifier', 'timepoint',
-                          'report_datetime', 'model', 'field_name']
         ordering = ('identifier', 'report_datetime')
         indexes = [
+            models.Index(fields=['identifier', 'timepoint',
+                                 'report_datetime', 'model', 'field_name']),
             models.Index(fields=['identifier', 'timepoint', 'model']),
             models.Index(
-                fields=['identifier', 'report_datetime', 'timepoint', 'model']),
-            models.Index(fields=['report_datetime', 'timepoint']),
+                fields=['identifier', 'timepoint', 'report_datetime', 'model']),
+            models.Index(fields=['timepoint', 'report_datetime']),
         ]
 
 
