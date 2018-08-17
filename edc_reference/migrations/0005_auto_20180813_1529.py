@@ -22,19 +22,4 @@ class Migration(migrations.Migration):
             name='reference',
             index_together=set(),
         ),
-        migrations.AddIndex(
-            model_name='reference',
-            index=models.Index(fields=['identifier', 'timepoint', 'report_datetime',
-                                       'model', 'field_name'], name='edc_referen_identif_669fb2_idx'),
-        ),
-        migrations.AddIndex(
-            model_name='reference',
-            index=models.Index(fields=[
-                               'identifier', 'timepoint', 'report_datetime', 'model'], name='edc_referen_identif_311e28_idx'),
-        ),
-        migrations.AddIndex(
-            model_name='reference',
-            index=models.Index(
-                fields=['timepoint', 'report_datetime'], name='edc_referen_timepoi_9bf87b_idx'),
-        ),
     ]
