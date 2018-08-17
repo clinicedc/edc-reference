@@ -6,22 +6,10 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('edc_reference', '0004_auto_20180116_1528'),
+        ('edc_reference', '0005_auto_20180813_1529'),
     ]
 
     operations = [
-        migrations.RemoveIndex(
-            model_name='reference',
-            name='edc_referen_identif_351847_idx',
-        ),
-        migrations.RemoveIndex(
-            model_name='reference',
-            name='edc_referen_report__69deaa_idx',
-        ),
-        migrations.AlterIndexTogether(
-            name='reference',
-            index_together=set(),
-        ),
         migrations.AddIndex(
             model_name='reference',
             index=models.Index(fields=['identifier', 'timepoint', 'report_datetime',
