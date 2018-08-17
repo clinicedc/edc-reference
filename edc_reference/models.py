@@ -96,8 +96,8 @@ class Reference(SiteModelMixin, BaseUuidModel):
                            'report_datetime', 'model', 'field_name']
         ordering = ('identifier', 'report_datetime')
         indexes = [
-            models.Index(fields=['identifier', 'timepoint',
-                                 'report_datetime', 'model', 'field_name']),
+            #             models.Index(fields=['identifier', 'timepoint',
+            #                                  'report_datetime', 'model', 'field_name']),
             models.Index(fields=['identifier', 'timepoint', 'model']),
             models.Index(
                 fields=['identifier', 'timepoint', 'report_datetime', 'model']),
