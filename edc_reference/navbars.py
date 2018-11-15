@@ -7,6 +7,7 @@ reference.append_item(
     NavbarItem(name='reference',
                title='reference',
                label='reference',
-               url_name='edc_reference:home_url'))
+               url_name='edc_reference:home_url',
+               permission_codename='edc_navbar.nav_reference'))
 
 site_navbars.register(reference)
