@@ -15,9 +15,17 @@ class ReferenceGetter:
     See also ReferenceModelMixin.
     """
 
-    def __init__(self, name=None, field_name=None, model_obj=None, visit_obj=None,
-                 subject_identifier=None, report_datetime=None, visit_code=None,
-                 create=None):
+    def __init__(
+        self,
+        name=None,
+        field_name=None,
+        model_obj=None,
+        visit_obj=None,
+        subject_identifier=None,
+        report_datetime=None,
+        visit_code=None,
+        create=None,
+    ):
         self._object = None
         self.value = None
         self.has_value = False
@@ -47,28 +55,27 @@ class ReferenceGetter:
             self.subject_identifier = subject_identifier
             self.report_datetime = report_datetime
             self.visit_code = visit_code
-        reference_model = site_reference_configs.get_reference_model(
-            name=self.name)
+        reference_model = site_reference_configs.get_reference_model(name=self.name)
         reference_model_cls = django_apps.get_model(reference_model)
         try:
             self.object = reference_model_cls.objects.get(**self._options)
         except ObjectDoesNotExist as e:
             if create:
-                self.object = reference_model_cls.objects.create(
-                    **self._options)
+                self.object = reference_model_cls.objects.create(**self._options)
                 # note: updater needs to "update_value"
             else:
-                raise ReferenceObjectDoesNotExist(
-                    f'{e}. Using {self._options}')
+                raise ReferenceObjectDoesNotExist(f"{e}. Using {self._options}")
         else:
-            self.value = getattr(self.object, 'value')
+            self.value = getattr(self.object, "value")
             self.has_value = True
         setattr(self, self.field_name, self.value)
 
     def __repr__(self):
-        return (f'<{self.__class__.__name__}({self.name}.{self.field_name}\','
-                f'\'{self.subject_identifier},{self.report_datetime}'
-                f') value={self.value}, has_value={self.has_value}>')
+        return (
+            f"<{self.__class__.__name__}({self.name}.{self.field_name}',"
+            f"'{self.subject_identifier},{self.report_datetime}"
+            f") value={self.value}, has_value={self.has_value}>"
+        )
 
     @property
     def _options(self):
@@ -77,4 +84,5 @@ class ReferenceGetter:
             model=self.name,
             report_datetime=self.report_datetime,
             timepoint=self.visit_code,
-            field_name=self.field_name)
+            field_name=self.field_name,
+        )

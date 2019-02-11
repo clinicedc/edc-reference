@@ -3,15 +3,16 @@ from django.core.exceptions import ObjectDoesNotExist
 
 
 class ReferenceManager(models.Manager):
-
-    def get_by_natural_key(self, identifier, timepoint, report_datetime,
-                           model, field_name):
+    def get_by_natural_key(
+        self, identifier, timepoint, report_datetime, model, field_name
+    ):
         return self.get(
             identifier=identifier,
             timepoint=timepoint,
             report_datetime=report_datetime,
             model=model,
-            field_name=field_name)
+            field_name=field_name,
+        )
 
     def filter_crf_for_visit(self, name=None, visit=None):
         """Returns a queryset of reference model instances
@@ -21,7 +22,8 @@ class ReferenceManager(models.Manager):
             identifier=visit.subject_identifier,
             model=name,
             report_datetime=visit.report_datetime,
-            timepoint=visit.visit_code)
+            timepoint=visit.visit_code,
+        )
 
     def get_crf_for_visit(self, name=None, visit=None, field_name=None):
         """Returns an instance of reference model
@@ -33,7 +35,8 @@ class ReferenceManager(models.Manager):
                 model=name,
                 report_datetime=visit.report_datetime,
                 timepoint=visit.visit_code,
-                field_name=field_name)
+                field_name=field_name,
+            )
         except ObjectDoesNotExist:
             model_obj = None
         return model_obj
@@ -47,7 +50,8 @@ class ReferenceManager(models.Manager):
             model=name,
             report_datetime=visit.report_datetime,
             timepoint=visit.visit_code,
-            field_name='panel')
+            field_name="panel",
+        )
         try:
             model_obj = self.get(**opts)
         except ObjectDoesNotExist:

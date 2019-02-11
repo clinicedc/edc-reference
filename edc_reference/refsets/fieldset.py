@@ -11,7 +11,7 @@ class Fieldset:
         self.all()
 
     def __repr__(self):
-        return f'{self.__class__.__name__}(field={self.field}, refsets={self._refsets})'
+        return f"{self.__class__.__name__}(field={self.field}, refsets={self._refsets})"
 
     def __iter__(self):
         return iter(self.values)
@@ -40,22 +40,20 @@ class Fieldset:
         """Re-order the collection ref objects by a single field
         and rebuild the values list.
         """
-        field = field or 'report_datetime'
+        field = field or "report_datetime"
         self.ordering = field
         reverse = False
-        if field.startswith('-'):
+        if field.startswith("-"):
             field = field[1:]
             reverse = True
         try:
             getattr(self._refsets[0], field)
         except AttributeError as e:
-            raise FieldsetError(
-                f'Invalid ordering field. field={field}. Got {e}')
+            raise FieldsetError(f"Invalid ordering field. field={field}. Got {e}")
         except IndexError:
             pass
         else:
-            self._refsets.sort(
-                key=lambda x: getattr(x, field) or 0, reverse=reverse)
+            self._refsets.sort(key=lambda x: getattr(x, field) or 0, reverse=reverse)
         self.all()
         if self._filter_values:
             self.filter(*self._filter_values)

@@ -22,28 +22,29 @@ class ReferenceModelMixin(models.Model):
         return self._meta.label_lower
 
     def model_reference_validate(self):
-        if 'panel' in [f.name for f in self._meta.get_fields()]:
+        if "panel" in [f.name for f in self._meta.get_fields()]:
             raise ReferenceModelMixinError(
-                'Detected field panel. Is this a requisition?. '
-                'Use RequisitionReferenceModelMixin '
-                'instead of ReferenceModelMixin')
+                "Detected field panel. Is this a requisition?. "
+                "Use RequisitionReferenceModelMixin "
+                "instead of ReferenceModelMixin"
+            )
 
     class Meta:
         abstract = True
 
 
 class RequisitionReferenceModelMixin(ReferenceModelMixin, models.Model):
-
     @property
     def reference_name(self):
-        return f'{self._meta.label_lower}.{self.panel.name}'
+        return f"{self._meta.label_lower}.{self.panel.name}"
 
     def model_reference_validate(self):
-        if 'panel' not in [f.name for f in self._meta.get_fields()]:
+        if "panel" not in [f.name for f in self._meta.get_fields()]:
             raise ReferenceModelMixinError(
-                'Did not detect field panel. Is this a CRF?. '
-                'Use ReferenceModelMixin '
-                'instead of RequisitionReferenceModelMixin')
+                "Did not detect field panel. Is this a CRF?. "
+                "Use ReferenceModelMixin "
+                "instead of RequisitionReferenceModelMixin"
+            )
 
     class Meta:
         abstract = True

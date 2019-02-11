@@ -8,7 +8,6 @@ from ..model_mixins import ReferenceModelMixin, RequisitionReferenceModelMixin
 
 
 class CrfModelMixin(models.Model):
-
     @property
     def visit(self):
         return self.subject_visit
@@ -26,8 +25,9 @@ class SubjectVisit(ReferenceModelMixin, BaseUuidModel):
     visit_code = models.CharField(max_length=50)
 
 
-class SubjectRequisition(CrfModelMixin, PanelModelMixin, RequisitionReferenceModelMixin,
-                         BaseUuidModel):
+class SubjectRequisition(
+    CrfModelMixin, PanelModelMixin, RequisitionReferenceModelMixin, BaseUuidModel
+):
 
     subject_visit = models.ForeignKey(SubjectVisit, on_delete=PROTECT)
 
