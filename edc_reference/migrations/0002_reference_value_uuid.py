@@ -5,14 +5,10 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('edc_reference', '0001_initial'),
-    ]
+    dependencies = [("edc_reference", "0001_initial")]
 
     operations = [
         migrations.AddField(
-            model_name='reference',
-            name='value_uuid',
-            field=models.UUIDField(null=True),
-        ),
+            model_name="reference", name="value_uuid", field=models.UUIDField(null=True)
+        )
     ]

@@ -8,20 +8,23 @@ import edc_base.sites.managers
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('sites', '0002_alter_domain_unique'),
-        ('edc_reference', '0003_reference_related_name'),
+        ("sites", "0002_alter_domain_unique"),
+        ("edc_reference", "0003_reference_related_name"),
     ]
 
     operations = [
         migrations.AlterModelManagers(
-            name='reference',
-            managers=[
-                ('on_site', edc_base.sites.managers.CurrentSiteManager()),
-            ],
+            name="reference",
+            managers=[("on_site", edc_base.sites.managers.CurrentSiteManager())],
         ),
         migrations.AddField(
-            model_name='reference',
-            name='site',
-            field=models.ForeignKey(editable=False, null=True, on_delete=django.db.models.deletion.PROTECT, to='sites.Site'),
+            model_name="reference",
+            name="site",
+            field=models.ForeignKey(
+                editable=False,
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                to="sites.Site",
+            ),
         ),
     ]
