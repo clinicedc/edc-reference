@@ -127,4 +127,4 @@ class Reference(SiteModelMixin, BaseUuidModel):
 
 
 if settings.APP_NAME == "edc_reference" and "makemigrations" not in sys.argv:
-    from .tests.models import *
+    from .tests.models import *  # noqa
