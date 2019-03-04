@@ -2,7 +2,7 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ObjectDoesNotExist
 from django.test import TestCase, tag
-from edc_base.utils import get_utcnow
+from edc_utils import get_utcnow
 from edc_lab.models.panel import Panel
 
 from ..models import Reference, ReferenceFieldDatatypeNotFound

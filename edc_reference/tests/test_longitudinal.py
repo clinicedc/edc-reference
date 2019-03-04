@@ -1,6 +1,6 @@
 from dateutil.relativedelta import relativedelta
 from django.test import TestCase, tag
-from edc_base import get_utcnow
+from edc_utils import get_utcnow
 
 from ..refsets import LongitudinalRefset, InvalidOrdering, NoRefsetObjectsExist
 from ..models import Reference
