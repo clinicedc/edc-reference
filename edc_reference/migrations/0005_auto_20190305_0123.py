@@ -8,34 +8,50 @@ import django_audit_fields.models.audit_model_mixin
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('edc_reference', '0004_auto_20180116_1528'),
-    ]
+    dependencies = [("edc_reference", "0004_auto_20180116_1528")]
 
     operations = [
         migrations.AlterField(
-            model_name='reference',
-            name='created',
-            field=models.DateTimeField(blank=True, default=django_audit_fields.models.audit_model_mixin.utcnow),
+            model_name="reference",
+            name="created",
+            field=models.DateTimeField(
+                blank=True, default=django_audit_fields.models.audit_model_mixin.utcnow
+            ),
         ),
         migrations.AlterField(
-            model_name='reference',
-            name='hostname_modified',
-            field=django_audit_fields.fields.hostname_modification_field.HostnameModificationField(blank=True, help_text='System field. (modified on every save)', max_length=50),
+            model_name="reference",
+            name="hostname_modified",
+            field=django_audit_fields.fields.hostname_modification_field.HostnameModificationField(
+                blank=True,
+                help_text="System field. (modified on every save)",
+                max_length=50,
+            ),
         ),
         migrations.AlterField(
-            model_name='reference',
-            name='modified',
-            field=models.DateTimeField(blank=True, default=django_audit_fields.models.audit_model_mixin.utcnow),
+            model_name="reference",
+            name="modified",
+            field=models.DateTimeField(
+                blank=True, default=django_audit_fields.models.audit_model_mixin.utcnow
+            ),
         ),
         migrations.AlterField(
-            model_name='reference',
-            name='user_created',
-            field=django_audit_fields.fields.userfield.UserField(blank=True, help_text='Updated by admin.save_model', max_length=50, verbose_name='user created'),
+            model_name="reference",
+            name="user_created",
+            field=django_audit_fields.fields.userfield.UserField(
+                blank=True,
+                help_text="Updated by admin.save_model",
+                max_length=50,
+                verbose_name="user created",
+            ),
         ),
         migrations.AlterField(
-            model_name='reference',
-            name='user_modified',
-            field=django_audit_fields.fields.userfield.UserField(blank=True, help_text='Updated by admin.save_model', max_length=50, verbose_name='user modified'),
+            model_name="reference",
+            name="user_modified",
+            field=django_audit_fields.fields.userfield.UserField(
+                blank=True,
+                help_text="Updated by admin.save_model",
+                max_length=50,
+                verbose_name="user modified",
+            ),
         ),
     ]
