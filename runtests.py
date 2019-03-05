@@ -81,6 +81,7 @@ DEFAULT_SETTINGS = dict(
 
     APP_NAME=app_name,
     EDC_BOOTSTRAP=3,
+    DASHBOARD_URL_NAMES={},
 
     DEFAULT_FILE_STORAGE='inmemorystorage.InMemoryStorage',
     MIGRATION_MODULES=DisableMigrations(),
