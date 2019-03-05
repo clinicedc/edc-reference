@@ -33,7 +33,12 @@ setup(
     keywords='django edc reference model',
     install_requires=[
         'edc-base',
+        'edc-constants',
         'edc-lab',
+        'edc-model',
+        'edc-navbar',
+        'edc-sites',
+        'edc-utils',
         'edc-visit-schedule',
     ],
     classifiers=[
