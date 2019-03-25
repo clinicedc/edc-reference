@@ -1,6 +1,6 @@
 from django.db import models
 from django.db.models.deletion import PROTECT
-from edc_lab.models.model_mixins import PanelModelMixin
+from edc_lab.model_mixins import PanelModelMixin
 from edc_model.models import BaseUuidModel
 from edc_utils import get_utcnow
 
