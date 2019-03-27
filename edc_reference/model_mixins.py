@@ -12,9 +12,13 @@ class ReferenceModelMixin(models.Model):
     reference_deleter_cls = ReferenceDeleter
     reference_updater_cls = ReferenceUpdater
 
-    def save(self, *args, **kwargs):
+    def update_reference_on_save(self):
         self.model_reference_validate()
-        self.reference_updater_cls(model_obj=self)
+        if self.reference_updater_cls:
+            self.reference_updater_cls(model_obj=self)
+
+    def save(self, *args, **kwargs):
+        self.update_reference_on_save()
         super().save(*args, **kwargs)
 
     @property
