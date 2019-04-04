@@ -9,7 +9,7 @@ reference.append_item(
         title="reference",
         label="reference",
         url_name="edc_reference:home_url",
-        permission_codename="edc_navbar.nav_reference",
+        codename="edc_navbar.nav_reference",
     )
 )
 
