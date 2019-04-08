@@ -1,4 +1,4 @@
-from ..site import site_reference_configs
+from ..site_reference import site_reference_configs
 from .reference_getter import ReferenceGetter
 
 

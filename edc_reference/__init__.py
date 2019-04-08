@@ -4,4 +4,4 @@ from .reference import ReferenceGetter
 from .reference import ReferenceUpdater
 from .reference import ReferenceFieldNotFound
 from .reference_model_config import ReferenceModelConfig
-from .site import site_reference_configs, ReferenceDuplicateField
+from .site_reference import site_reference_configs, ReferenceDuplicateField

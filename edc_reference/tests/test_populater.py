@@ -6,7 +6,7 @@ from edc_utils import get_utcnow
 from ..models import Reference
 from ..populater import Populater
 from ..reference_model_config import ReferenceModelConfig
-from ..site import site_reference_configs
+from ..site_reference import site_reference_configs
 from .models import SubjectVisit, CrfOne
 
 

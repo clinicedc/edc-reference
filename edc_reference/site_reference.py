@@ -3,8 +3,6 @@ import sys
 
 from django.apps import apps as django_apps
 from django.utils.module_loading import import_module, module_has_submodule
-from edc_visit_schedule.site_visit_schedules import site_visit_schedules
-from edc_lab.site_labs import site_labs
 
 from .reference_model_config import (
     ReferenceDuplicateField,
@@ -50,7 +48,7 @@ class ReferenceUpdater:
         return reference
 
 
-class Site:
+class SiteReference:
 
     reference_updater = ReferenceUpdater()
 
@@ -135,7 +133,8 @@ class Site:
             try:
                 mod = import_module(app)
                 try:
-                    before_import_registry = copy.copy(site_reference_configs.registry)
+                    before_import_registry = copy.copy(
+                        site_reference_configs.registry)
                     import_module(f"{app}.{module_name}")
                     sys.stdout.write(
                         f" * registered reference model configs from application '{app}'\n"
@@ -156,6 +155,9 @@ class Site:
 
         Note: Unscheduled and PRN forms are automatically add as well.
         """
+        from edc_visit_schedule.site_visit_schedules import site_visit_schedules
+        from edc_lab.site_labs import site_labs
+
         requisition_fields = [
             "requisition_datetime",
             "panel",
@@ -211,4 +213,4 @@ class Site:
         reference_config.add_fields(fields)
 
 
-site_reference_configs = Site()
+site_reference_configs = SiteReference()

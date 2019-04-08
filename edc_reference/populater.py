@@ -5,7 +5,7 @@ from django.apps import apps as django_apps
 
 from .models import Reference
 from .reference import ReferenceUpdater
-from .site import site_reference_configs
+from .site_reference import site_reference_configs
 
 
 class PopulaterAttributeError(Exception):
@@ -41,7 +41,8 @@ class Populater:
 
     def summarize(self):
         for name in self.names:
-            reference_model = site_reference_configs.get_reference_model(name=name)
+            reference_model = site_reference_configs.get_reference_model(
+                name=name)
             reference_model_cls = django_apps.get_model(reference_model)
             count = reference_model_cls.objects.filter(model=name).count()
             sys.stdout.write(f" * {name}: {count} records\n")
@@ -58,7 +59,8 @@ class Populater:
             f" - running for {len(self.names)} selected reference names.\n"
         )
         if self.skip_existing:
-            sys.stdout.write(f" - skipping reference names with existing references\n")
+            sys.stdout.write(
+                f" - skipping reference names with existing references\n")
         if self.dry_run:
             sys.stdout.write(
                 f" - This is a dry run. No data will be created/modified.\n"
@@ -89,7 +91,8 @@ class Populater:
                 index += 1
                 sub_end_time = arrow.utcnow().to("Africa/Gaborone").datetime
                 tdelta = sub_end_time - sub_start_time
-                sys.stdout.write(f" * {name} {index} / {total} ... {str(tdelta)}    \r")
+                sys.stdout.write(
+                    f" * {name} {index} / {total} ... {str(tdelta)}    \r")
                 self.reference_updater_cls(model_obj=model_obj)
             sub_end_time = arrow.utcnow().to("Africa/Gaborone").datetime
             tdelta = sub_end_time - sub_start_time
@@ -101,7 +104,8 @@ class Populater:
 
     def skip(self, name=None):
         if self.skip_existing:
-            reference_model = site_reference_configs.get_reference_model(name=name)
+            reference_model = site_reference_configs.get_reference_model(
+                name=name)
             reference_model_cls = django_apps.get_model(reference_model)
             return reference_model_cls.objects.filter(model=name).exists()
         return False

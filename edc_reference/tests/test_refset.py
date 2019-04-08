@@ -5,7 +5,7 @@ from edc_utils import get_utcnow
 from ..models import Reference
 from ..reference_model_config import ReferenceModelConfig
 from ..refsets import Refset, RefsetError, RefsetOverlappingField
-from ..site import site_reference_configs
+from ..site_reference import site_reference_configs
 from .models import SubjectVisit, CrfOne
 
 
@@ -142,7 +142,8 @@ class TestRefset(TestCase):
             if field == "report_datetime":
                 self.assertEqual(value, self.subject_visits[0].report_datetime)
             elif field == "visit_code":
-                self.assertEqual(value, self.subject_visits[0].visit_code, msg=field)
+                self.assertEqual(
+                    value, self.subject_visits[0].visit_code, msg=field)
 
     def test_if_reference_updates_fields(self):
         for index, subject_visit in enumerate(self.subject_visits):
@@ -161,9 +162,11 @@ class TestRefset(TestCase):
                             value, subject_visit.report_datetime, msg=field
                         )
                     elif field == "visit_code":
-                        self.assertEqual(value, subject_visit.visit_code, msg=field)
+                        self.assertEqual(
+                            value, subject_visit.visit_code, msg=field)
                     else:
-                        self.assertEqual(value, getattr(crf_one, field), msg=field)
+                        self.assertEqual(value, getattr(
+                            crf_one, field), msg=field)
 
     def test_raises_on_overlapping_field(self):
         site_reference_configs.add_fields_to_config(

@@ -1,7 +1,7 @@
 from django.apps import apps as django_apps
 from django.core.exceptions import ObjectDoesNotExist
 
-from ..site import site_reference_configs
+from ..site_reference import site_reference_configs
 
 
 class ReferenceObjectDoesNotExist(Exception):
@@ -55,16 +55,19 @@ class ReferenceGetter:
             self.subject_identifier = subject_identifier
             self.report_datetime = report_datetime
             self.visit_code = visit_code
-        reference_model = site_reference_configs.get_reference_model(name=self.name)
+        reference_model = site_reference_configs.get_reference_model(
+            name=self.name)
         reference_model_cls = django_apps.get_model(reference_model)
         try:
             self.object = reference_model_cls.objects.get(**self._options)
         except ObjectDoesNotExist as e:
             if create:
-                self.object = reference_model_cls.objects.create(**self._options)
+                self.object = reference_model_cls.objects.create(
+                    **self._options)
                 # note: updater needs to "update_value"
             else:
-                raise ReferenceObjectDoesNotExist(f"{e}. Using {self._options}")
+                raise ReferenceObjectDoesNotExist(
+                    f"{e}. Using {self._options}")
         else:
             self.value = getattr(self.object, "value")
             self.has_value = True
