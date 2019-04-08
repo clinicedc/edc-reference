@@ -3,7 +3,7 @@ import sys
 from django.apps import AppConfig as DjangoAppConfig
 from django.core.checks.registry import register
 
-from .site import site_reference_configs
+from .site_reference import site_reference_configs
 from .system_checks import check_site_reference_configs
 
 

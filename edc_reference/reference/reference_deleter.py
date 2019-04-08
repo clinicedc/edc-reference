@@ -1,7 +1,7 @@
 from django.apps import apps as django_apps
 from django.db import transaction
 
-from ..site import site_reference_configs
+from ..site_reference import site_reference_configs
 
 
 class ReferenceDeleter:
@@ -18,7 +18,8 @@ class ReferenceDeleter:
         )
         self.reference_model_cls = django_apps.get_model(reference_model)
         self.model_obj = model_obj
-        self.reference_objects = self.reference_model_cls.objects.filter(**self.options)
+        self.reference_objects = self.reference_model_cls.objects.filter(
+            **self.options)
         with transaction.atomic():
             self.reference_objects.delete()
 
