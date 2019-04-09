@@ -39,7 +39,7 @@ Register the model and the relevant fields with the site global, ``site_referenc
 
 .. code-block:: python
     
-    from edc_reference.site import ReferenceModelConfig
+    from edc_reference.site_reference import ReferenceModelConfig
 
     reference = ReferenceModelConfig(
         model='edc_reference.crfone',
