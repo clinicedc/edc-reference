@@ -104,7 +104,7 @@ Model managers methods are also available, for example:
      
  
 Accessing pivoted data with ``LongitudinalRefset``
-===============================================
+==================================================
 
  TODO
 
