@@ -137,16 +137,14 @@ class TestReferenceModel(TestCase):
         )
 
     def test_model_creates_reference(self):
-        CrfOne.objects.create(
-            subject_visit=self.subject_visit, field_str="erik")
+        CrfOne.objects.create(subject_visit=self.subject_visit, field_str="erik")
         self.assertEqual(
             len(site_reference_configs.get_fields("edc_reference.crfone")), 5
         )
         self.assertEqual(Reference.objects.all().count(), 7)
 
     def test_model_creates_reference2(self):
-        CrfOne.objects.create(
-            subject_visit=self.subject_visit, field_str="erik")
+        CrfOne.objects.create(subject_visit=self.subject_visit, field_str="erik")
         try:
             reference = Reference.objects.get(
                 identifier=self.subject_identifier,
@@ -160,8 +158,7 @@ class TestReferenceModel(TestCase):
         self.assertEqual(reference.value, "erik")
 
     def test_model_get_for_report_datetime(self):
-        CrfOne.objects.create(
-            subject_visit=self.subject_visit, field_str="erik")
+        CrfOne.objects.create(subject_visit=self.subject_visit, field_str="erik")
         try:
             reference = Reference.objects.get(
                 identifier=self.subject_identifier,
@@ -201,8 +198,7 @@ class TestReferenceModel(TestCase):
 
     def test_model_creates_for_datetime(self):
         dte = get_utcnow()
-        CrfOne.objects.create(
-            subject_visit=self.subject_visit, field_datetime=dte)
+        CrfOne.objects.create(subject_visit=self.subject_visit, field_datetime=dte)
         reference = Reference.objects.get(
             identifier=self.subject_identifier,
             timepoint=self.subject_visit.visit_code,
@@ -213,8 +209,7 @@ class TestReferenceModel(TestCase):
 
     def test_model_creates_for_int(self):
         integer = 100
-        CrfOne.objects.create(
-            subject_visit=self.subject_visit, field_int=integer)
+        CrfOne.objects.create(subject_visit=self.subject_visit, field_int=integer)
         reference = Reference.objects.get(
             identifier=self.subject_identifier,
             timepoint=self.subject_visit.visit_code,
@@ -276,8 +271,7 @@ class TestReferenceModel(TestCase):
         )
         self.assertEqual(reference.value, self.subject_visit.report_datetime)
 
-        getter = ReferenceGetter(
-            field_name="report_datetime", model_obj=crf_one)
+        getter = ReferenceGetter(field_name="report_datetime", model_obj=crf_one)
         self.assertEqual(getter.value, self.subject_visit.report_datetime)
 
     def test_model_create_handles_none(self):
@@ -303,8 +297,7 @@ class TestReferenceModel(TestCase):
             name="edc_reference.crfwithbadfield",
             fields=["blah1", "blah2", "blah3", "blah4"],
         )
-        self.assertRaises(ReferenceFieldValidationError,
-                          reference_config.check)
+        self.assertRaises(ReferenceFieldValidationError, reference_config.check)
 
     def test_model_raises_on_bad_field_name_checked_by_site(self):
         reference_config = ReferenceModelConfig(
@@ -336,8 +329,7 @@ class TestReferenceModel(TestCase):
         )
 
     def test_getter_repr(self):
-        crf_one = CrfOne.objects.create(
-            subject_visit=self.subject_visit, field_int=100)
+        crf_one = CrfOne.objects.create(subject_visit=self.subject_visit, field_int=100)
         reference = ReferenceGetter(field_name="field_int", model_obj=crf_one)
         self.assertTrue(repr(reference))
 
@@ -348,8 +340,7 @@ class TestReferenceModel(TestCase):
             report_datetimes.append(obj.report_datetime)
         self.assertGreater(len(report_datetimes), 0)
         for report_datetime in report_datetimes:
-            self.assertEqual(
-                report_datetime, self.subject_visit.report_datetime)
+            self.assertEqual(report_datetime, self.subject_visit.report_datetime)
 
     def test_reference_getter_sets_attr(self):
         integer = 100
