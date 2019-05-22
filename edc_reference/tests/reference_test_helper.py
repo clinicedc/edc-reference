@@ -50,8 +50,7 @@ class ReferenceTestHelper:
                 try:
                     value, internal_type = options.get(field_name)
                     if internal_type not in self.field_types:
-                        raise TypeError(
-                            f"Invalid internal type. Got '{internal_type}'")
+                        raise TypeError(f"Invalid internal type. Got '{internal_type}'")
                 except (TypeError, ValueError) as e:
                     value = options.get(field_name)
                     internal_type = None
@@ -65,8 +64,7 @@ class ReferenceTestHelper:
                                 f"{e}. Got field_name={field_name}, value={value}"
                             )
                 if value:
-                    reference.update_value(
-                        value=value, internal_type=internal_type)
+                    reference.update_value(value=value, internal_type=internal_type)
         return self.reference_model_cls.objects.filter(
             model=reference_name,
             identifier=self.subject_identifier,

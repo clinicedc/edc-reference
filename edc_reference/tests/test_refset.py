@@ -7,6 +7,8 @@ from ..reference_model_config import ReferenceModelConfig
 from ..refsets import Refset, RefsetError, RefsetOverlappingField
 from ..site_reference import site_reference_configs
 from .models import SubjectVisit, CrfOne
+from pprint import pprint
+from edc_constants.constants import NEG
 
 
 class TestRefset(TestCase):
@@ -130,6 +132,16 @@ class TestRefset(TestCase):
         )
         self.assertIsNone(refset._fields.get("field_str"))
 
+    def test_multiple_reference_instance_for_one_field(self):
+        refset = Refset(
+            name="edc_reference.crfone",
+            subject_identifier=self.subject_identifier,
+            report_datetime=self.subject_visits[0].report_datetime,
+            timepoint=self.subject_visits[0].visit_code,
+            reference_model_cls=Reference,
+        )
+        self.assertEqual(NEG, refset._fields.get("field_str"))
+
     def test_if_reference_exists_updates_report_datetime_in_fields(self):
         refset = Refset(
             name="edc_reference.crfone",
@@ -142,8 +154,7 @@ class TestRefset(TestCase):
             if field == "report_datetime":
                 self.assertEqual(value, self.subject_visits[0].report_datetime)
             elif field == "visit_code":
-                self.assertEqual(
-                    value, self.subject_visits[0].visit_code, msg=field)
+                self.assertEqual(value, self.subject_visits[0].visit_code, msg=field)
 
     def test_if_reference_updates_fields(self):
         for index, subject_visit in enumerate(self.subject_visits):
@@ -162,11 +173,9 @@ class TestRefset(TestCase):
                             value, subject_visit.report_datetime, msg=field
                         )
                     elif field == "visit_code":
-                        self.assertEqual(
-                            value, subject_visit.visit_code, msg=field)
+                        self.assertEqual(value, subject_visit.visit_code, msg=field)
                     else:
-                        self.assertEqual(value, getattr(
-                            crf_one, field), msg=field)
+                        self.assertEqual(value, getattr(crf_one, field), msg=field)
 
     def test_raises_on_overlapping_field(self):
         site_reference_configs.add_fields_to_config(

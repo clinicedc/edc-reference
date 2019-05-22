@@ -30,8 +30,7 @@ class TestSite(TestCase):
         name = "edc_reference.crfone"
         site_reference_configs.registry = {}
         reference = ReferenceModelConfig(
-            name=name, fields=["field_date",
-                               "field_datetime", "field_int", "field_str"]
+            name=name, fields=["field_date", "field_datetime", "field_int", "field_str"]
         )
         site_reference_configs.register(reference=reference)
         self.assertRaises(
@@ -43,8 +42,7 @@ class TestSite(TestCase):
         site_reference_configs.loaded = False
         site_reference_configs.autodiscover("tests.reference_model_configs")
         self.assertTrue(site_reference_configs.loaded)
-        self.assertIn("edc_reference.erik", list(
-            site_reference_configs.registry))
+        self.assertIn("edc_reference.erik", list(site_reference_configs.registry))
 
         self.assertEqual(
             ["f1", "f2", "f3", "f4"],
@@ -66,8 +64,7 @@ class TestSite(TestCase):
         try:
             reference.check()
         except (ReferenceFieldValidationError, ReferenceModelValidationError) as e:
-            self.fail(
-                f"Reference validation error unexpectedly raised. Got{e}")
+            self.fail(f"Reference validation error unexpectedly raised. Got{e}")
 
     def test_check_ok2(self):
         name = "edc_reference.crfone"
@@ -130,8 +127,7 @@ class TestSite(TestCase):
         reference = ReferenceModelConfig(fields=fields, name=name)
         site_reference_configs.register(reference)
         self.assertEqual(
-            reference, site_reference_configs.get_config(
-                name="edc_reference.crfone")
+            reference, site_reference_configs.get_config(name="edc_reference.crfone")
         )
         self.assertRaises(
             SiteReferenceConfigError, site_reference_configs.get_config, name=None
@@ -140,25 +136,20 @@ class TestSite(TestCase):
     def test_register_reference_models_from_visit_schedule(self):
         site_reference_configs.registry = {}
         site_reference_configs.register_from_visit_schedule(
-            visit_models={
-                "edc_appointment.appointment": "edc_reference.subjectvisit"}
+            visit_models={"edc_appointment.appointment": "edc_reference.subjectvisit"}
         )
-        self.assertTrue(site_reference_configs.get_config(
-            name="edc_reference.crfone"))
+        self.assertTrue(site_reference_configs.get_config(name="edc_reference.crfone"))
 
     def test_reregister_reference_models_from_visit_schedule(self):
         site_reference_configs.registry = {}
         site_reference_configs.register_from_visit_schedule(
-            visit_models={
-                "edc_appointment.appointment": "edc_reference.subjectvisit"}
+            visit_models={"edc_appointment.appointment": "edc_reference.subjectvisit"}
         )
         # do again
         site_reference_configs.register_from_visit_schedule(
-            visit_models={
-                "edc_appointment.appointment": "edc_reference.subjectvisit"}
+            visit_models={"edc_appointment.appointment": "edc_reference.subjectvisit"}
         )
-        self.assertTrue(site_reference_configs.get_config(
-            name="edc_reference.crfone"))
+        self.assertTrue(site_reference_configs.get_config(name="edc_reference.crfone"))
 
     def test_add_fields_to_reference_config(self):
         name = "edc_reference.crfone"
@@ -167,6 +158,5 @@ class TestSite(TestCase):
         reference_config = ReferenceModelConfig(fields=fields, name=name)
         site_reference_configs.register(reference_config)
         self.assertEqual(reference_config.field_names, ["f1"])
-        site_reference_configs.add_fields_to_config(
-            name=name, fields=["f2", "f3"])
+        site_reference_configs.add_fields_to_config(name=name, fields=["f2", "f3"])
         self.assertEqual(reference_config.field_names, ["f1", "f2", "f3"])

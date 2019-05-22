@@ -1,5 +1,5 @@
-from django.core.exceptions import ObjectDoesNotExist
-
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from django.db.models import query
 from ..site_reference import site_reference_configs, SiteReferenceConfigError
 
 
@@ -29,7 +29,7 @@ class Refset:
         # checking for these values so that field values
         # that are None are so because the reference instance
         # does not exist and not because these values were none.
-        self._fields = []
+        self._fields = {}
         if not report_datetime:
             raise RefsetError("Expected report_datetime. Got None")
         if not timepoint:
@@ -40,12 +40,10 @@ class Refset:
         self.report_datetime = report_datetime
         self.timepoint = timepoint
         self.name = name
+        self.reference_model_cls = reference_model_cls
 
         self.model = ".".join(name.split(".")[:2])
 
-        opts = dict(
-            identifier=self.subject_identifier, timepoint=timepoint, model=self.name
-        )
         try:
             self._fields = dict.fromkeys(
                 site_reference_configs.get_fields(name=self.name)
@@ -56,17 +54,25 @@ class Refset:
             self._fields.pop("report_datetime")
         except KeyError:
             pass
-        try:
-            references = reference_model_cls.objects.filter(**opts)
-        except AttributeError as e:
-            raise RefsetError(e)
-        self._update_fields(references=references)
 
-    def _update_fields(self, references=None):
+        self._update_fields()
+
+    def _update_fields(self, **kwargs):
         """Gets and updates each reference model instance for
         each field.
         """
-        if references.count() == 0:
+        try:
+            references = list(
+                self.reference_model_cls.objects.filter(
+                    identifier=self.subject_identifier,
+                    timepoint=self.timepoint,
+                    model=self.name,
+                )
+            )
+        except AttributeError as e:
+            raise RefsetError(e)
+
+        if len(references) == 0:
             self._fields.update(report_datetime=None)
             for field_name in self._fields:
                 self._fields.update({field_name: None})
@@ -74,8 +80,8 @@ class Refset:
         else:
             for field_name in self._fields:
                 try:
-                    obj = references.get(field_name=field_name)
-                except ObjectDoesNotExist:
+                    obj = [obj for obj in references if obj.field_name == field_name][0]
+                except IndexError:
                     self._fields.update({field_name: None})
                 else:
                     self._fields.update({field_name: obj.value})

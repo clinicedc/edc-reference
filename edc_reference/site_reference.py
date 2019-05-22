@@ -133,8 +133,7 @@ class SiteReference:
             try:
                 mod = import_module(app)
                 try:
-                    before_import_registry = copy.copy(
-                        site_reference_configs.registry)
+                    before_import_registry = copy.copy(site_reference_configs.registry)
                     import_module(f"{app}.{module_name}")
                     sys.stdout.write(
                         f" * registered reference model configs from application '{app}'\n"

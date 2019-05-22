@@ -118,8 +118,7 @@ class TestLongitudinal(TestCase):
             refset.fieldset("field_str").all().values, ["NEG", "POS", "POS"]
         )
         self.assertEqual(
-            refset.fieldset("field_str").all().order_by(
-                "-report_datetime").values,
+            refset.fieldset("field_str").all().order_by("-report_datetime").values,
             ["POS", "POS", "NEG"],
         )
 
@@ -131,13 +130,11 @@ class TestLongitudinal(TestCase):
             reference_model_cls=Reference,
         )
         self.assertEqual(
-            refset.fieldset("field_str").all().order_by(
-                "field_datetime").values,
+            refset.fieldset("field_str").all().order_by("field_datetime").values,
             ["NEG", "POS", "POS"],
         )
         self.assertEqual(
-            refset.fieldset("field_str").order_by(
-                "-field_datetime").all().values,
+            refset.fieldset("field_str").order_by("-field_datetime").all().values,
             ["POS", "POS", "NEG"],
         )
 
@@ -149,12 +146,10 @@ class TestLongitudinal(TestCase):
             reference_model_cls=Reference,
         )
         self.assertEqual(
-            refset.fieldset("field_str").order_by(
-                "field_datetime").last(), "POS"
+            refset.fieldset("field_str").order_by("field_datetime").last(), "POS"
         )
         self.assertEqual(
-            refset.fieldset("field_str").order_by(
-                "-field_datetime").last(), "NEG"
+            refset.fieldset("field_str").order_by("-field_datetime").last(), "NEG"
         )
 
     def test_repr(self):
