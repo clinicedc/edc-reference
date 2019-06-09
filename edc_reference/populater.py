@@ -2,7 +2,7 @@ import arrow
 import sys
 
 from django.apps import apps as django_apps
-
+from django.conf import settings
 from .models import Reference
 from .reference import ReferenceUpdater
 from .site_reference import site_reference_configs
@@ -49,7 +49,7 @@ class Populater:
     def populate(self):
         if self.dry_run:
             self.reference_updater_cls = DryRunDummy
-        t_start = arrow.utcnow().to("Africa/Gaborone").strftime("%H:%M")
+        t_start = arrow.utcnow().to(settings.TIME_ZONE).strftime("%H:%M")
         sys.stdout.write(f"Populating reference model. Started: {t_start}\n")
         sys.stdout.write(
             f" - found {len(site_reference_configs.registry)} reference names in registry.\n"
@@ -84,19 +84,19 @@ class Populater:
             model_cls = django_apps.get_model(".".join(name.split(".")[:2]))
             qs = model_cls.objects.all()
             total = qs.count()
-            sub_start_time = arrow.utcnow().to("Africa/Gaborone").datetime
+            sub_start_time = arrow.utcnow().to(settings.TIME_ZONE).datetime
             for index, model_obj in enumerate(qs):
                 index += 1
-                sub_end_time = arrow.utcnow().to("Africa/Gaborone").datetime
+                sub_end_time = arrow.utcnow().to(settings.TIME_ZONE).datetime
                 tdelta = sub_end_time - sub_start_time
                 sys.stdout.write(f" * {name} {index} / {total} ... {str(tdelta)}    \r")
                 self.reference_updater_cls(model_obj=model_obj)
-            sub_end_time = arrow.utcnow().to("Africa/Gaborone").datetime
+            sub_end_time = arrow.utcnow().to(settings.TIME_ZONE).datetime
             tdelta = sub_end_time - sub_start_time
             sys.stdout.write(
                 f" * {name} {index} / {total} . OK  in {str(tdelta)}      \n"
             )
-        t_end = arrow.utcnow().to("Africa/Gaborone").strftime("%H:%M")
+        t_end = arrow.utcnow().to(settings.TIME_ZONE).strftime("%H:%M")
         sys.stdout.write(f"Done. Ended: {t_end}\n")
 
     def skip(self, name=None):
