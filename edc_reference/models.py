@@ -1,6 +1,3 @@
-import sys
-
-from django.conf import settings
 from django.db import models
 from edc_model.models import BaseUuidModel
 from edc_sites.models import CurrentSiteManager, SiteModelMixin
@@ -116,15 +113,13 @@ class Reference(SiteModelMixin, BaseUuidModel):
             "model",
             "field_name",
         ]
-        ordering = ("identifier", "report_datetime")
+        ordering = ("identifier", "report_datetime",
+                    "timepoint", "model", "field_name")
         indexes = [
-            models.Index(fields=["identifier", "timepoint", "model"]),
             models.Index(
-                fields=["identifier", "report_datetime", "timepoint", "model"]
+                fields=["identifier", "timepoint", "model", "field_name"]),
+            models.Index(
+                fields=["identifier", "report_datetime",
+                        "timepoint", "model", "field_name"]
             ),
-            models.Index(fields=["report_datetime", "timepoint"]),
         ]
-
-
-if settings.APP_NAME == "edc_reference" and "makemigrations" not in sys.argv:
-    from .tests.models import *  # noqa

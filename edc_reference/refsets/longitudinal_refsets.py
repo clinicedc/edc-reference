@@ -5,7 +5,7 @@ from .fieldset import Fieldset
 from .refset import Refset
 
 
-class LongitudinalRefsetError(Exception):
+class LongitudinalRefsetsError(Exception):
     pass
 
 
@@ -17,7 +17,7 @@ class NoRefsetObjectsExist(Exception):
     pass
 
 
-class LongitudinalRefset:
+class LongitudinalRefsets:
     """A collection of a subject's `Refset` objects for a given visit model.
     """
 
@@ -49,7 +49,8 @@ class LongitudinalRefset:
         try:
             self.visit_references = reference_model_cls.objects.filter(**opts)
         except ValueError as e:
-            raise LongitudinalRefsetError(f"{e}. name={self.name}. Got {opts}.")
+            raise LongitudinalRefsetsError(
+                f"{e}. name={self.name}. Got {opts}.")
         self._refsets = []
         for visit_reference in self.visit_references:
             self._refsets.append(
@@ -77,7 +78,7 @@ class LongitudinalRefset:
         return self._refsets[i]
 
     def order_by(self, field=None):
-        """Re-order the collection ref objects by a single field.
+        """Re-order the collection of refset objects by a single field.
         """
         if field and field.replace("-", "") not in self.ordering_attrs:
             raise InvalidOrdering(
@@ -91,13 +92,16 @@ class LongitudinalRefset:
             field = field[1:]
             reverse = True
         try:
-            self._refsets.sort(key=lambda x: getattr(x, field), reverse=reverse)
+            self._refsets.sort(key=lambda x: getattr(
+                x, field), reverse=reverse)
         except TypeError:
-            null_refsets = [x for x in self._refsets if getattr(x, field) is None]
+            null_refsets = [
+                x for x in self._refsets if getattr(x, field) is None]
             notnull_refsets = [
                 x for x in self._refsets if getattr(x, field) is not None
             ]
-            notnull_refsets.sort(key=lambda x: getattr(x, field), reverse=reverse)
+            notnull_refsets.sort(
+                key=lambda x: getattr(x, field), reverse=reverse)
             self._refsets = notnull_refsets + null_refsets
         return self
 

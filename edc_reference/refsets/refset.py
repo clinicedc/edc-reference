@@ -1,5 +1,3 @@
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-from django.db.models import query
 from ..site_reference import site_reference_configs, SiteReferenceConfigError
 
 
@@ -32,10 +30,12 @@ class Refset:
         self._fields = {}
         if not report_datetime:
             raise RefsetError("Expected report_datetime. Got None")
-        if not timepoint:
+        if timepoint is None:
             raise RefsetError("Expected timepoint. Got None")
         if not subject_identifier:
             raise RefsetError("Expected subject_identifier. Got None")
+        if not reference_model_cls:
+            raise RefsetError("Expected reference_model_cls. Got None")
         self.subject_identifier = subject_identifier
         self.report_datetime = report_datetime
         self.timepoint = timepoint
@@ -58,29 +58,25 @@ class Refset:
         self._update_fields()
 
     def _update_fields(self, **kwargs):
-        """Gets and updates each reference model instance for
-        each field.
+        """Returns a dictionary after getting and/or updating
+        each reference model instance for each field.
         """
-        try:
-            references = list(
-                self.reference_model_cls.objects.filter(
-                    identifier=self.subject_identifier,
-                    timepoint=self.timepoint,
-                    model=self.name,
-                )
-            )
-        except AttributeError as e:
-            raise RefsetError(e)
-
-        if len(references) == 0:
+        opts = dict(
+            identifier=self.subject_identifier,
+            timepoint=self.timepoint,
+            model=self.name,
+        )
+        if self.reference_model_cls.objects.filter(**opts).count() == 0:
             self._fields.update(report_datetime=None)
             for field_name in self._fields:
                 self._fields.update({field_name: None})
                 setattr(self, field_name, None)
         else:
+            references = self.reference_model_cls.objects.filter(**opts)
             for field_name in self._fields:
                 try:
-                    obj = [obj for obj in references if obj.field_name == field_name][0]
+                    obj = [
+                        obj for obj in references if obj.field_name == field_name][0]
                 except IndexError:
                     self._fields.update({field_name: None})
                 else:
@@ -97,11 +93,7 @@ class Refset:
                             f"Got {existing_value} == {value}. See {self.name}"
                         )
             self._fields.update(report_datetime=self.report_datetime)
-            self._fields.update(visit_code=self.timepoint)
-
-    @property
-    def visit_code(self):
-        return self.timepoint
+            # self._fields.update(timepoint=self.timepoint)
 
     def __repr__(self):
         return (

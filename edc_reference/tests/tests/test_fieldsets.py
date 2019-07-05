@@ -1,6 +1,5 @@
 from django.test import TestCase, tag
-
-from ..refsets import Fieldset, FieldsetError
+from edc_reference.refsets import Fieldset, FieldsetError
 
 
 class DummyRefset:
@@ -20,7 +19,8 @@ class TestFieldset(TestCase):
         self.assertEqual(list(self.fieldset.all()), [0, 1, 2, 3, 4])
 
     def test_all_chained_to_orderby(self):
-        self.assertEqual(list(self.fieldset.all().order_by("-f1")), [4, 3, 2, 1, 0])
+        self.assertEqual(
+            list(self.fieldset.all().order_by("-f1")), [4, 3, 2, 1, 0])
 
     def test_filter(self):
         self.assertEqual(list(self.fieldset.filter(2)), [2])
@@ -29,7 +29,8 @@ class TestFieldset(TestCase):
         self.assertEqual(list(self.fieldset.filter()), [0, 1, 2, 3, 4])
 
     def test_filter_chained_to_orderby(self):
-        self.assertEqual(list(self.fieldset.filter(2, 3, 4).order_by("-f1")), [4, 3, 2])
+        self.assertEqual(list(self.fieldset.filter(
+            2, 3, 4).order_by("-f1")), [4, 3, 2])
 
     def test_orderby_nothing(self):
         self.fieldset._refsets = []
@@ -46,16 +47,20 @@ class TestFieldset(TestCase):
         self.assertEqual(self.fieldset.order_by("-f1").last(), 0)
 
     def test_order_asc(self):
-        self.assertEqual(list(self.fieldset.all().order_by("f1")), [0, 1, 2, 3, 4])
+        self.assertEqual(
+            list(self.fieldset.all().order_by("f1")), [0, 1, 2, 3, 4])
 
     def test_order_desc(self):
-        self.assertEqual(list(self.fieldset.all().order_by("-f1")), [4, 3, 2, 1, 0])
+        self.assertEqual(
+            list(self.fieldset.all().order_by("-f1")), [4, 3, 2, 1, 0])
 
     def test_order_asc_by_f2(self):
-        self.assertEqual(list(self.fieldset.all().order_by("f2")), [4, 0, 1, 2, 3])
+        self.assertEqual(
+            list(self.fieldset.all().order_by("f2")), [4, 0, 1, 2, 3])
 
     def test_order_desc_by_f2(self):
-        self.assertEqual(list(self.fieldset.all().order_by("-f2")), [3, 2, 1, 0, 4])
+        self.assertEqual(
+            list(self.fieldset.all().order_by("-f2")), [3, 2, 1, 0, 4])
 
     def test_order_raises(self):
         self.assertRaises(FieldsetError, self.fieldset.all().order_by, "blah")

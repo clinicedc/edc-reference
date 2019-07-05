@@ -22,7 +22,7 @@ class ReferenceManager(models.Manager):
             identifier=visit.subject_identifier,
             model=name,
             report_datetime=visit.report_datetime,
-            timepoint=visit.visit_code,
+            timepoint=visit.timepoint,
         )
 
     def get_crf_for_visit(self, name=None, visit=None, field_name=None):
@@ -34,7 +34,7 @@ class ReferenceManager(models.Manager):
                 identifier=visit.subject_identifier,
                 model=name,
                 report_datetime=visit.report_datetime,
-                timepoint=visit.visit_code,
+                timepoint=visit.timepoint,
                 field_name=field_name,
             )
         except ObjectDoesNotExist:
@@ -49,7 +49,7 @@ class ReferenceManager(models.Manager):
             identifier=visit.subject_identifier,
             model=name,
             report_datetime=visit.report_datetime,
-            timepoint=visit.visit_code,
+            timepoint=visit.timepoint,
             field_name="panel",
         )
         try:

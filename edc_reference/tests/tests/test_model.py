@@ -1,7 +1,6 @@
 from django.test import TestCase, tag
+from edc_reference.models import Reference
 from edc_utils import get_utcnow
-
-from ..models import Reference
 
 
 class TestModel(TestCase):
@@ -21,5 +20,6 @@ class TestModel(TestCase):
             self.reference_model_cls.objects.get(id=reference.id).value, "5"
         )
         self.assertEqual(
-            self.reference_model_cls.objects.get(id=reference.id).value_str, "5"
+            self.reference_model_cls.objects.get(
+                id=reference.id).value_str, "5"
         )

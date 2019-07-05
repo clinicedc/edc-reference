@@ -1,50 +1,72 @@
 from dateutil.relativedelta import relativedelta
+from decimal import Decimal
 from django.core.exceptions import ObjectDoesNotExist
 from django.test import TestCase, tag
+from edc_appointment.models import Appointment
+from edc_reference.models import Reference
+from edc_reference.populater import Populater
 from edc_utils import get_utcnow
-
-from ..models import Reference
-from ..populater import Populater
-from ..reference_model_config import ReferenceModelConfig
-from ..site_reference import site_reference_configs
-from .models import SubjectVisit, CrfOne
+from edc_visit_tracking.constants import SCHEDULED
+from reference_app.models import SubjectVisit, CrfOne, SubjectConsent
+from reference_app.visit_schedules import visit_schedule
 
 
 class TestPopulater(TestCase):
     def setUp(self):
         self.subject_identifier = "12345"
-        site_reference_configs.registry = {}
-        site_reference_configs.loaded = False
-        reference = ReferenceModelConfig(
-            name="edc_reference.subjectvisit", fields=["report_datetime", "visit_code"]
-        )
-        site_reference_configs.register(reference=reference)
-        reference = ReferenceModelConfig(
-            name="edc_reference.crfone",
-            fields=["field_date", "field_datetime", "field_int", "field_str"],
-        )
-        site_reference_configs.register(reference=reference)
-        self.report_datetime = get_utcnow()
-        self.report_date = get_utcnow().date()
-        self.subject_visit1 = SubjectVisit.objects.create(
+
+        dte = get_utcnow()
+
+        SubjectConsent.objects.create(
+            consent_datetime=dte - relativedelta(days=10),
             subject_identifier=self.subject_identifier,
-            report_datetime=self.report_datetime,
+            identity="012345678",
+            confirm_identity="012345678",
         )
+
+        appointment1 = Appointment.objects.create(
+            subject_identifier=self.subject_identifier,
+            appt_datetime=dte - relativedelta(days=10),
+            timepoint_datetime=dte - relativedelta(days=10),
+            visit_schedule_name=visit_schedule.name,
+            schedule_name="schedule",
+            visit_code="1000",
+            timepoint=Decimal("1.0"),
+        )
+
+        appointment2 = Appointment.objects.create(
+            subject_identifier=self.subject_identifier,
+            appt_datetime=dte,
+            timepoint_datetime=dte,
+            visit_schedule_name=visit_schedule.name,
+            schedule_name="schedule",
+            visit_code="2000",
+            timepoint=Decimal("2.0"),
+        )
+
+        self.subject_visit1 = SubjectVisit.objects.create(
+            appointment=appointment1,
+            report_datetime=appointment1.appt_datetime,
+            reason=SCHEDULED,
+        )
+
         CrfOne.objects.create(
             subject_visit=self.subject_visit1,
-            field_date=self.report_date,
-            field_datetime=self.report_datetime,
+            field_date=self.subject_visit1.report_datetime.date(),
+            field_datetime=self.subject_visit1.report_datetime,
             field_int=1,
             field_str="erik",
         )
+
         self.subject_visit2 = SubjectVisit.objects.create(
-            subject_identifier=self.subject_identifier,
-            report_datetime=self.report_datetime - relativedelta(years=1),
+            appointment=appointment2,
+            report_datetime=appointment2.appt_datetime,
+            reason=SCHEDULED,
         )
         CrfOne.objects.create(
             subject_visit=self.subject_visit2,
-            field_date=self.report_date,
-            field_datetime=self.report_datetime,
+            field_date=self.subject_visit2.report_datetime.date(),
+            field_datetime=self.subject_visit2.report_datetime,
             field_int=1,
             field_str="erik",
         )
@@ -58,7 +80,7 @@ class TestPopulater(TestCase):
                 try:
                     Reference.objects.get(
                         identifier=self.subject_identifier,
-                        model="edc_reference.subjectvisit",
+                        model="reference_app.subjectvisit",
                         report_datetime=visit.report_datetime,
                         field_name="report_datetime",
                         value_datetime=visit.report_datetime,
@@ -75,10 +97,10 @@ class TestPopulater(TestCase):
                 try:
                     Reference.objects.get(
                         identifier=self.subject_identifier,
-                        model="edc_reference.crfone",
+                        model="reference_app.crfone",
                         report_datetime=visit.report_datetime,
                         field_name="field_date",
-                        value_date=self.report_date,
+                        value_date=visit.report_datetime.date(),
                     )
                 except ObjectDoesNotExist as e:
                     self.fail(f"Object unexpectedly DoesNotExist. Got {e}")
@@ -92,10 +114,10 @@ class TestPopulater(TestCase):
                 try:
                     Reference.objects.get(
                         identifier=self.subject_identifier,
-                        model="edc_reference.crfone",
+                        model="reference_app.crfone",
                         report_datetime=visit.report_datetime,
                         field_name="field_datetime",
-                        value_datetime=self.report_datetime,
+                        value_datetime=visit.report_datetime,
                     )
                 except ObjectDoesNotExist as e:
                     self.fail(f"Object unexpectedly DoesNotExist. Got {e}")
@@ -110,7 +132,7 @@ class TestPopulater(TestCase):
                     Reference.objects.get(
                         identifier=self.subject_identifier,
                         report_datetime=visit.report_datetime,
-                        model="edc_reference.crfone",
+                        model="reference_app.crfone",
                         field_name="field_str",
                         value_str="erik",
                     )
@@ -126,7 +148,7 @@ class TestPopulater(TestCase):
                 try:
                     Reference.objects.get(
                         identifier=self.subject_identifier,
-                        model="edc_reference.crfone",
+                        model="reference_app.crfone",
                         report_datetime=visit.report_datetime,
                         field_name="field_int",
                         value_int=1,
@@ -142,7 +164,7 @@ class TestPopulater(TestCase):
                 try:
                     Reference.objects.get(
                         identifier=self.subject_identifier,
-                        model="edc_reference.crfone",
+                        model="reference_app.crfone",
                         report_datetime=visit.report_datetime,
                         field_name="field_int",
                         value_int=1,
