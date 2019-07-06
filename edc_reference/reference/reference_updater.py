@@ -35,7 +35,7 @@ class ReferenceUpdater:
             except IndexError:
                 raise ReferenceFieldNotFound(
                     f"Reference field not found on model. Got '{field_name}'. "
-                    f"See reference {model_obj.reference_name}. "
+                    f"See reference config for {model_obj.reference_name}. "
                     f"Model fields are {[fld.name for fld in model_obj._meta.get_fields()]}"
                 )
             reference = self.getter_cls(

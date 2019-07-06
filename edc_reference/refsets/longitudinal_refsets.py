@@ -5,7 +5,7 @@ from .fieldset import Fieldset
 from .refset import Refset
 
 
-class LongitudinalRefsetError(Exception):
+class LongitudinalRefsetsError(Exception):
     pass
 
 
@@ -17,7 +17,7 @@ class NoRefsetObjectsExist(Exception):
     pass
 
 
-class LongitudinalRefset:
+class LongitudinalRefsets:
     """A collection of a subject's `Refset` objects for a given visit model.
     """
 
@@ -49,7 +49,7 @@ class LongitudinalRefset:
         try:
             self.visit_references = reference_model_cls.objects.filter(**opts)
         except ValueError as e:
-            raise LongitudinalRefsetError(f"{e}. name={self.name}. Got {opts}.")
+            raise LongitudinalRefsetsError(f"{e}. name={self.name}. Got {opts}.")
         self._refsets = []
         for visit_reference in self.visit_references:
             self._refsets.append(
@@ -57,6 +57,9 @@ class LongitudinalRefset:
                     name=self.name,
                     subject_identifier=subject_identifier,
                     report_datetime=visit_reference.report_datetime,
+                    visit_schedule_name=visit_reference.visit_schedule_name,
+                    schedule_name=visit_reference.schedule_name,
+                    visit_code=visit_reference.visit_code,
                     timepoint=visit_reference.timepoint,
                     reference_model_cls=reference_model_cls,
                 )
@@ -77,7 +80,7 @@ class LongitudinalRefset:
         return self._refsets[i]
 
     def order_by(self, field=None):
-        """Re-order the collection ref objects by a single field.
+        """Re-order the collection of refset objects by a single field.
         """
         if field and field.replace("-", "") not in self.ordering_attrs:
             raise InvalidOrdering(

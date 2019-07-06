@@ -1,8 +1,7 @@
 from datetime import date, datetime
 from django.apps import apps as django_apps
 from django.core.exceptions import ObjectDoesNotExist
-
-from ..site_reference import site_reference_configs
+from edc_reference.site_reference import site_reference_configs
 
 
 class ReferenceTestHelperError(Exception):
@@ -36,14 +35,24 @@ class ReferenceTestHelper:
         return self.reference_model_cls.objects.filter(**kwargs)
 
     def create_for_model(
-        self, reference_name=None, report_datetime=None, visit_code=None, **options
+        self,
+        reference_name=None,
+        report_datetime=None,
+        timepoint=None,
+        visit_schedule_name=None,
+        schedule_name=None,
+        visit_code=None,
+        **options,
     ):
         for field_name in site_reference_configs.get_fields(name=reference_name):
             reference = self.reference_model_cls.objects.create(
                 model=reference_name,
                 identifier=self.subject_identifier,
                 report_datetime=report_datetime,
-                timepoint=visit_code,
+                visit_schedule_name=visit_schedule_name,
+                schedule_name=schedule_name,
+                visit_code=visit_code,
+                timepoint=timepoint,
                 field_name=field_name,
             )
             if field_name != "report_datetime":
@@ -72,7 +81,14 @@ class ReferenceTestHelper:
         )
 
     def update_for_model(
-        self, reference_name=None, report_datetime=None, visit_code=None, valueset=None
+        self,
+        reference_name=None,
+        report_datetime=None,
+        visit_schedule_name=None,
+        schedule_name=None,
+        visit_code=None,
+        timepoint=None,
+        valueset=None,
     ):
         for field_name, internal_type, value in valueset:
             try:
@@ -80,7 +96,10 @@ class ReferenceTestHelper:
                     model=reference_name,
                     identifier=self.subject_identifier,
                     report_datetime=report_datetime,
-                    timepoint=visit_code,
+                    visit_schedule_name=visit_schedule_name,
+                    schedule_name=schedule_name,
+                    visit_code=visit_code,
+                    timepoint=timepoint,
                     field_name=field_name,
                 )
             except ObjectDoesNotExist:
@@ -88,16 +107,29 @@ class ReferenceTestHelper:
                     model=reference_name,
                     identifier=self.subject_identifier,
                     report_datetime=report_datetime,
-                    timepoint=visit_code,
+                    visit_schedule_name=visit_schedule_name,
+                    schedule_name=schedule_name,
+                    visit_code=visit_code,
+                    timepoint=timepoint,
                     field_name=field_name,
                 )
             reference.update_value(value=value, internal_type=internal_type)
 
-    def create_visit(self, report_datetime=None, timepoint=None):
+    def create_visit(
+        self,
+        report_datetime=None,
+        timepoint=None,
+        visit_schedule_name=None,
+        schedule_name=None,
+        visit_code=None,
+    ):
         reference = self.reference_model_cls.objects.create(
             identifier=self.subject_identifier,
             model=self.visit_model,
             report_datetime=report_datetime,
+            visit_schedule_name=visit_schedule_name,
+            schedule_name=schedule_name,
+            visit_code=visit_code,
             timepoint=timepoint,
             field_name="report_datetime",
         )

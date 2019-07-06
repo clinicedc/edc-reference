@@ -10,6 +10,7 @@ from .system_checks import check_site_reference_configs
 class AppConfig(DjangoAppConfig):
     name = "edc_reference"
     verbose_name = "Edc Reference"
+    include_in_administration_section = True
 
     def ready(self):
         from .signals import reference_post_delete  # noqa

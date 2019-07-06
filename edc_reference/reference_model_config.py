@@ -50,6 +50,12 @@ class ReferenceModelConfig:
         self.field_names = list(set(self.field_names))
         self.field_names.sort()
 
+    def remove_fields(self, fields=None):
+        for field in fields:
+            self.field_names.remove(field)
+        self.field_names = list(set(self.field_names))
+        self.field_names.sort()
+
     def __repr__(self):
         return f"{self.__class__.__name__}(name={self.name}, fields={self.field_names})"
 

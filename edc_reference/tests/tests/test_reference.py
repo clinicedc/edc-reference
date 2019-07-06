@@ -1,22 +1,26 @@
 from datetime import date
 from dateutil.relativedelta import relativedelta
+from decimal import Decimal
 from django.core.exceptions import ObjectDoesNotExist
 from django.test import TestCase, tag
-from edc_utils import get_utcnow
+from edc_appointment.models import Appointment
 from edc_lab.models.panel import Panel
-
-from ..models import Reference, ReferenceFieldDatatypeNotFound
-from ..reference import ReferenceDeleter, ReferenceGetter
-from ..reference import ReferenceObjectDoesNotExist
-from ..reference import ReferenceUpdater, ReferenceFieldNotFound
-from ..reference_model_config import (
+from edc_reference.models import Reference, ReferenceFieldDatatypeNotFound
+from edc_reference.reference import ReferenceDeleter, ReferenceGetter
+from edc_reference.reference import ReferenceObjectDoesNotExist
+from edc_reference.reference import ReferenceUpdater, ReferenceFieldNotFound
+from edc_reference.reference_model_config import (
     ReferenceDuplicateField,
     ReferenceFieldValidationError,
 )
-from ..reference_model_config import ReferenceModelConfig
-from ..site_reference import site_reference_configs
-from .models import CrfOne, SubjectVisit
-from .models import CrfWithUnknownDatatype, TestModel, SubjectRequisition
+from edc_reference.reference_model_config import ReferenceModelConfig
+from edc_reference.site_reference import site_reference_configs
+from edc_utils import get_utcnow
+from edc_visit_tracking.constants import SCHEDULED
+from reference_app.models import CrfOne, SubjectVisit, SubjectConsent
+from reference_app.models import CrfWithUnknownDatatype, TestModel, SubjectRequisition
+from reference_app.reference_model_configs import register_configs
+from reference_app.visit_schedules import visit_schedule
 
 
 class TestReferenceModel(TestCase):
@@ -24,16 +28,45 @@ class TestReferenceModel(TestCase):
         self.panel_cd4 = Panel.objects.create(name="cd4")
         self.panel_vl = Panel.objects.create(name="vl")
         self.panel_wb = Panel.objects.create(name="wb")
-        site_reference_configs.registry = {}
-        self.subject_identifier = "1"
-        subjectvisit_reference = ReferenceModelConfig(
-            name="edc_reference.subjectvisit", fields=["report_datetime", "visit_code"]
+        self.subject_identifier = "123456789"
+
+        dte = get_utcnow()
+
+        SubjectConsent.objects.create(
+            consent_datetime=dte,
+            subject_identifier=self.subject_identifier,
+            identity="012345678",
+            confirm_identity="012345678",
         )
+
+        appointment = Appointment.objects.create(
+            subject_identifier=self.subject_identifier,
+            appt_datetime=dte,
+            timepoint_datetime=dte,
+            visit_schedule_name=visit_schedule.name,
+            schedule_name="schedule",
+            visit_code="1000",
+            timepoint=Decimal("1.0"),
+        )
+
+        self.subject_visit = SubjectVisit.objects.create(
+            appointment=appointment, reason=SCHEDULED
+        )
+
+    def reset_site_reference_configs(self):
+        site_reference_configs.registry = {}
+        site_reference_configs.loaded = False
+        site_reference_configs.registered_from_visit_schedules = False
+
+        subjectvisit_reference = ReferenceModelConfig(
+            name="reference_app.subjectvisit", fields=["report_datetime", "visit_code"]
+        )
+
         self.testmodel_reference = ReferenceModelConfig(
-            name="edc_reference.testmodel", fields=["field_str", "report_datetime"]
+            name="reference_app.testmodel", fields=["field_str", "report_datetime"]
         )
         self.crfone_reference = ReferenceModelConfig(
-            name="edc_reference.crfone",
+            name="reference_app.crfone",
             fields=[
                 "field_str",
                 "field_date",
@@ -45,9 +78,6 @@ class TestReferenceModel(TestCase):
         site_reference_configs.register(subjectvisit_reference)
         site_reference_configs.register(self.testmodel_reference)
         site_reference_configs.register(self.crfone_reference)
-        self.subject_visit = SubjectVisit.objects.create(
-            subject_identifier=self.subject_identifier, visit_code="code"
-        )
 
     def test_updater_repr(self):
         model_obj = TestModel.objects.create(
@@ -62,7 +92,7 @@ class TestReferenceModel(TestCase):
         ReferenceUpdater(model_obj=model_obj)
         reference = Reference.objects.get(
             identifier=self.subject_identifier,
-            timepoint=self.subject_visit.visit_code,
+            timepoint=self.subject_visit.timepoint,
             field_name="field_str",
         )
         self.assertTrue(repr(reference))
@@ -74,7 +104,7 @@ class TestReferenceModel(TestCase):
         ReferenceUpdater(model_obj=model_obj)
         reference = Reference.objects.get(
             identifier=self.subject_identifier,
-            timepoint=self.subject_visit.visit_code,
+            timepoint=self.subject_visit.timepoint,
             field_name="field_str",
         )
         self.assertEqual(reference.value, "erik")
@@ -88,23 +118,25 @@ class TestReferenceModel(TestCase):
         ReferenceUpdater(model_obj=model_obj)
         reference = Reference.objects.get(
             identifier=self.subject_identifier,
-            timepoint=self.subject_visit.visit_code,
+            timepoint=self.subject_visit.timepoint,
             field_name="field_str",
         )
         self.assertEqual(reference.value, "bob")
 
     def test_updater_with_bad_field_name(self):
-        site_reference_configs.registry = {}
-        self.testmodel_reference = ReferenceModelConfig(
-            name="edc_reference.testmodel", fields=["blah"]
+        site_reference_configs.add_fields_to_config(
+            "reference_app.testmodel", fields=["blah"]
         )
-        site_reference_configs.register(self.testmodel_reference)
-        self.assertRaises(
-            ReferenceFieldNotFound,
-            TestModel.objects.create,
-            subject_visit=self.subject_visit,
-            field_str="erik",
-        )
+        try:
+            TestModel.objects.create(subject_visit=self.subject_visit, field_str="erik")
+        except ReferenceFieldNotFound:
+            pass
+        else:
+            self.fail("ReferenceFieldNotFound unexpectedly not raised")
+        finally:
+            site_reference_configs.remove_fields_from_config(
+                "reference_app.testmodel", fields=["blah"]
+            )
 
     def test_deleter(self):
         model_obj = TestModel.objects.create(
@@ -116,7 +148,7 @@ class TestReferenceModel(TestCase):
         try:
             reference = Reference.objects.get(
                 identifier=self.subject_identifier,
-                timepoint=self.subject_visit.visit_code,
+                timepoint=self.subject_visit.timepoint,
                 field_name="field_str",
             )
         except ObjectDoesNotExist:
@@ -129,28 +161,31 @@ class TestReferenceModel(TestCase):
             subject_visit=self.subject_visit, field_str="erik"
         )
         self.assertGreater(
-            Reference.objects.filter(model="edc_reference.crfone").count(), 2
+            Reference.objects.filter(model="reference_app.crfone").count(), 2
         )
         crf_one.delete()
         self.assertEqual(
-            0, Reference.objects.filter(model="edc_reference.crfone").count()
+            0, Reference.objects.filter(model="reference_app.crfone").count()
         )
 
     def test_model_creates_reference(self):
         CrfOne.objects.create(subject_visit=self.subject_visit, field_str="erik")
         self.assertEqual(
-            len(site_reference_configs.get_fields("edc_reference.crfone")), 5
+            len(site_reference_configs.get_fields("reference_app.crfone")), 5
         )
-        self.assertEqual(Reference.objects.all().count(), 7)
+
+        self.assertEqual(
+            Reference.objects.filter(model="reference_app.crfone").count(), 5
+        )
 
     def test_model_creates_reference2(self):
         CrfOne.objects.create(subject_visit=self.subject_visit, field_str="erik")
         try:
             reference = Reference.objects.get(
                 identifier=self.subject_identifier,
-                timepoint=self.subject_visit.visit_code,
+                timepoint=self.subject_visit.timepoint,
                 report_datetime=self.subject_visit.report_datetime,
-                model="edc_reference.crfone",
+                model="reference_app.crfone",
                 field_name="field_str",
             )
         except ObjectDoesNotExist as e:
@@ -162,9 +197,9 @@ class TestReferenceModel(TestCase):
         try:
             reference = Reference.objects.get(
                 identifier=self.subject_identifier,
-                timepoint=self.subject_visit.visit_code,
+                timepoint=self.subject_visit.timepoint,
                 report_datetime=self.subject_visit.report_datetime,
-                model="edc_reference.crfone",
+                model="reference_app.crfone",
                 field_name="report_datetime",
             )
         except ObjectDoesNotExist as e:
@@ -179,7 +214,7 @@ class TestReferenceModel(TestCase):
         crf_one.save()
         reference = Reference.objects.get(
             identifier=self.subject_identifier,
-            timepoint=self.subject_visit.visit_code,
+            timepoint=self.subject_visit.timepoint,
             report_datetime=self.subject_visit.report_datetime,
             field_name="field_str",
         )
@@ -190,7 +225,7 @@ class TestReferenceModel(TestCase):
         CrfOne.objects.create(subject_visit=self.subject_visit, field_date=dte)
         reference = Reference.objects.get(
             identifier=self.subject_identifier,
-            timepoint=self.subject_visit.visit_code,
+            timepoint=self.subject_visit.timepoint,
             report_datetime=self.subject_visit.report_datetime,
             field_name="field_date",
         )
@@ -201,7 +236,7 @@ class TestReferenceModel(TestCase):
         CrfOne.objects.create(subject_visit=self.subject_visit, field_datetime=dte)
         reference = Reference.objects.get(
             identifier=self.subject_identifier,
-            timepoint=self.subject_visit.visit_code,
+            timepoint=self.subject_visit.timepoint,
             report_datetime=self.subject_visit.report_datetime,
             field_name="field_datetime",
         )
@@ -212,7 +247,7 @@ class TestReferenceModel(TestCase):
         CrfOne.objects.create(subject_visit=self.subject_visit, field_int=integer)
         reference = Reference.objects.get(
             identifier=self.subject_identifier,
-            timepoint=self.subject_visit.visit_code,
+            timepoint=self.subject_visit.timepoint,
             report_datetime=self.subject_visit.report_datetime,
             field_name="field_int",
         )
@@ -223,20 +258,20 @@ class TestReferenceModel(TestCase):
         integer = 100
         dte = date.today()
         dtetime = get_utcnow()
-        field_datetime = dtetime - relativedelta(years=1)
+        field_datetime = dtetime - relativedelta(days=1)
         CrfOne.objects.create(
             subject_visit=self.subject_visit,
-            report_datetime=dtetime - relativedelta(years=10),
+            report_datetime=dtetime - relativedelta(days=10),
             field_str=strval,
             field_int=integer,
             field_date=dte,
             field_datetime=field_datetime,
         )
-        for field_name in site_reference_configs.get_fields("edc_reference.crfone"):
+        for field_name in site_reference_configs.get_fields("reference_app.crfone"):
             reference = Reference.objects.get(
                 identifier=self.subject_identifier,
-                model="edc_reference.crfone",
-                timepoint=self.subject_visit.visit_code,
+                model="reference_app.crfone",
+                timepoint=self.subject_visit.timepoint,
                 report_datetime=self.subject_visit.report_datetime,
                 field_name=field_name,
             )
@@ -259,13 +294,13 @@ class TestReferenceModel(TestCase):
         dtetime = get_utcnow()
         crf_one = CrfOne.objects.create(
             subject_visit=self.subject_visit,
-            report_datetime=get_utcnow() - relativedelta(years=10),
+            report_datetime=get_utcnow() - relativedelta(days=10),
             field_datetime=dtetime,
         )
         reference = Reference.objects.get(
             identifier=self.subject_identifier,
-            model="edc_reference.crfone",
-            timepoint=self.subject_visit.visit_code,
+            model="reference_app.crfone",
+            timepoint=self.subject_visit.timepoint,
             report_datetime=self.subject_visit.report_datetime,
             field_name="report_datetime",
         )
@@ -278,7 +313,7 @@ class TestReferenceModel(TestCase):
         CrfOne.objects.create(subject_visit=self.subject_visit, field_int=None)
         reference = Reference.objects.get(
             identifier=self.subject_identifier,
-            timepoint=self.subject_visit.visit_code,
+            timepoint=self.subject_visit.timepoint,
             report_datetime=self.subject_visit.report_datetime,
             field_name="field_int",
         )
@@ -288,20 +323,20 @@ class TestReferenceModel(TestCase):
         self.assertRaises(
             ReferenceDuplicateField,
             ReferenceModelConfig,
-            name="edc_reference.crfwithduplicatefield",
+            name="reference_app.crfwithduplicatefield",
             fields=["field_int", "field_int", "field_datetime", "field_str"],
         )
 
     def test_model_raises_on_bad_field_name(self):
         reference_config = ReferenceModelConfig(
-            name="edc_reference.crfwithbadfield",
+            name="reference_app.crfwithbadfield",
             fields=["blah1", "blah2", "blah3", "blah4"],
         )
         self.assertRaises(ReferenceFieldValidationError, reference_config.check)
 
     def test_model_raises_on_bad_field_name_checked_by_site(self):
         reference_config = ReferenceModelConfig(
-            name="edc_reference.crfwithbadfield",
+            name="reference_app.crfwithbadfield",
             fields=["blah1", "blah2", "blah3", "blah4"],
         )
         site_reference_configs.register(reference_config)
@@ -310,7 +345,7 @@ class TestReferenceModel(TestCase):
 
     def test_raises_on_missing_model_mixin(self):
         reference_config = ReferenceModelConfig(
-            name="edc_reference.TestModelBad", fields=["report_datetime"]
+            name="reference_app.TestModelBad", fields=["report_datetime"]
         )
         site_reference_configs.register(reference_config)
         errors = site_reference_configs.check()
@@ -318,7 +353,7 @@ class TestReferenceModel(TestCase):
 
     def test_model_raises_on_unknown_field_datatype(self):
         reference_config = ReferenceModelConfig(
-            name="edc_reference.CrfWithUnknownDatatype", fields=["field_decimal"]
+            name="reference_app.CrfWithUnknownDatatype", fields=["field_decimal"]
         )
         site_reference_configs.register(reference_config)
         self.assertRaises(
@@ -356,18 +391,28 @@ class TestReferenceModel(TestCase):
         self.assertEqual(reference.field_int, None)
 
     def test_site_checks_no_fields_raises(self):
-        name = "edc_reference.crfone"
+        name = "reference_app.crfone"
         site_reference_configs.registry = {}
-        self.assertRaises(
-            ReferenceFieldValidationError, ReferenceModelConfig, fields=[], name=name
-        )
+        try:
+            ReferenceModelConfig(fields=[], name=name)
+        except ReferenceFieldValidationError:
+            pass
+        else:
+            self.fail("ReferenceFieldValidationError unexpectedly not raised")
+        finally:
+            register_configs()
 
     def test_site_checks_no_fields_raises2(self):
-        name = "edc_reference.crfone"
+        name = "reference_app.crfone"
         site_reference_configs.registry = {}
-        self.assertRaises(
-            ReferenceFieldValidationError, ReferenceModelConfig, name=name
-        )
+        try:
+            ReferenceModelConfig(name=name)
+        except ReferenceFieldValidationError:
+            pass
+        else:
+            self.fail("ReferenceFieldValidationError unexpectedly not raised")
+        finally:
+            register_configs()
 
     def test_reference_getter_without_crf_type_model(self):
         integer = 100
@@ -375,7 +420,7 @@ class TestReferenceModel(TestCase):
             subject_visit=self.subject_visit, field_int=integer
         )
         reference = ReferenceGetter(
-            name="edc_reference.crfone", field_name="field_int", visit_obj=crf_one.visit
+            name="reference_app.crfone", field_name="field_int", visit_obj=crf_one.visit
         )
         self.assertEqual(reference.field_int, integer)
 
@@ -385,11 +430,14 @@ class TestReferenceModel(TestCase):
             subject_visit=self.subject_visit, field_int=integer
         )
         reference = ReferenceGetter(
-            name="edc_reference.crfone",
+            name="reference_app.crfone",
             field_name="field_int",
             subject_identifier=self.subject_identifier,
             report_datetime=crf_one.visit.report_datetime,
+            visit_schedule_name=crf_one.visit.visit_schedule_name,
+            schedule_name=crf_one.visit.schedule_name,
             visit_code=crf_one.visit.visit_code,
+            timepoint=crf_one.visit.timepoint,
         )
         self.assertEqual(reference.field_int, integer)
 
@@ -401,13 +449,13 @@ class TestReferenceModel(TestCase):
         self.assertRaises(
             ReferenceObjectDoesNotExist,
             reference=ReferenceGetter,
-            name="edc_reference.crfone",
+            name="reference_app.crfone",
             field_name="blah",
             model_obj=crf_one,
         )
         try:
             ReferenceGetter(
-                field_name="blah", name="edc_reference.crfone", model_obj=crf_one
+                field_name="blah", name="reference_app.crfone", model_obj=crf_one
             )
         except ReferenceObjectDoesNotExist:
             pass
@@ -417,7 +465,7 @@ class TestReferenceModel(TestCase):
             ReferenceObjectDoesNotExist,
             reference=ReferenceGetter,
             field_name="blah",
-            model="edc_reference.crfone",
+            model="reference_app.crfone",
             model_obj=self.subject_visit,
         )
 
@@ -434,7 +482,7 @@ class TestReferenceModel(TestCase):
             field_datetime=dtetime,
         )
         qs = Reference.objects.filter_crf_for_visit(
-            "edc_reference.crfone", self.subject_visit
+            "reference_app.crfone", self.subject_visit
         )
         self.assertEqual(qs.count(), 5)
 
@@ -451,52 +499,40 @@ class TestReferenceModel(TestCase):
             field_datetime=dtetime,
         )
         obj = Reference.objects.get_crf_for_visit(
-            "edc_reference.crfone", self.subject_visit, "field_str"
+            "reference_app.crfone", self.subject_visit, "field_str"
         )
         self.assertEqual(obj.value, "erik")
         obj = Reference.objects.get_crf_for_visit(
-            "edc_reference.crfone", self.subject_visit, "field_int"
+            "reference_app.crfone", self.subject_visit, "field_int"
         )
         self.assertEqual(obj.value, integer)
         obj = Reference.objects.get_crf_for_visit(
-            "edc_reference.crfone", self.subject_visit, "field_date"
+            "reference_app.crfone", self.subject_visit, "field_date"
         )
         self.assertEqual(obj.value, dte)
         obj = Reference.objects.get_crf_for_visit(
-            "edc_reference.crfone", self.subject_visit, "field_datetime"
+            "reference_app.crfone", self.subject_visit, "field_datetime"
         )
         self.assertEqual(obj.value, dtetime)
         obj = Reference.objects.get_crf_for_visit(
-            "edc_reference.crfone", self.subject_visit, "blah"
+            "reference_app.crfone", self.subject_visit, "blah"
         )
         self.assertIsNone(obj)
 
     def test_model_manager_requisition(self):
-        reference_config = ReferenceModelConfig(
-            name="edc_reference.subjectrequisition.cd4", fields=["panel"]
-        )
-        site_reference_configs.register(reference_config)
         SubjectRequisition.objects.create(
             subject_visit=self.subject_visit, panel=self.panel_cd4
         )
         obj = Reference.objects.get_requisition_for_visit(
-            "edc_reference.subjectrequisition.cd4", self.subject_visit
+            "reference_app.subjectrequisition.cd4", self.subject_visit
         )
         self.assertEqual(obj.value, self.panel_cd4.id)
         obj = Reference.objects.get_requisition_for_visit(
-            "edc_reference.subjectrequisition.blah", self.subject_visit
+            "reference_app.subjectrequisition.blah", self.subject_visit
         )
         self.assertIsNone(obj)
 
     def test_requisition_creates_two(self):
-        reference_config = ReferenceModelConfig(
-            name="edc_reference.subjectrequisition.cd4", fields=["panel"]
-        )
-        site_reference_configs.register(reference_config)
-        reference_config = ReferenceModelConfig(
-            name="edc_reference.subjectrequisition.vl", fields=["panel"]
-        )
-        site_reference_configs.register(reference_config)
         SubjectRequisition.objects.create(
             subject_visit=self.subject_visit, panel=self.panel_cd4
         )
@@ -504,32 +540,19 @@ class TestReferenceModel(TestCase):
             subject_visit=self.subject_visit, panel=self.panel_vl
         )
         obj = Reference.objects.get_requisition_for_visit(
-            "edc_reference.subjectrequisition.vl", self.subject_visit
+            "reference_app.subjectrequisition.vl", self.subject_visit
         )
         self.assertEqual(obj.value, self.panel_vl.id)
         obj = Reference.objects.get_requisition_for_visit(
-            "edc_reference.subjectrequisition.cd4", self.subject_visit
+            "reference_app.subjectrequisition.cd4", self.subject_visit
         )
         self.assertEqual(obj.value, self.panel_cd4.id)
         obj = Reference.objects.get_requisition_for_visit(
-            "edc_reference.subjectrequisition.blah", self.subject_visit
+            "reference_app.subjectrequisition.blah", self.subject_visit
         )
         self.assertIsNone(obj)
 
     def test_requisition_creates2(self):
-        reference_config = ReferenceModelConfig(
-            name="edc_reference.subjectrequisition.cd4", fields=["panel"]
-        )
-        site_reference_configs.register(reference_config)
-        reference_config = ReferenceModelConfig(
-            name="edc_reference.subjectrequisition.vl", fields=["panel"]
-        )
-        site_reference_configs.register(reference_config)
-        reference_config = ReferenceModelConfig(
-            name="edc_reference.subjectrequisition.wb", fields=["panel"]
-        )
-        site_reference_configs.register(reference_config)
-
         SubjectRequisition.objects.create(
             subject_visit=self.subject_visit, panel=self.panel_vl
         )
@@ -543,9 +566,9 @@ class TestReferenceModel(TestCase):
         for panel in [self.panel_cd4, self.panel_vl, self.panel_wb]:
             with self.subTest(panel=panel):
                 Reference.objects.get(
-                    model=f"edc_reference.subjectrequisition.{panel.name}",
+                    model=f"reference_app.subjectrequisition.{panel.name}",
                     report_datetime=self.subject_visit.report_datetime,
-                    timepoint=self.subject_visit.visit_code,
+                    timepoint=self.subject_visit.timepoint,
                     field_name="panel",
                     value_uuid=panel.id,
                 )

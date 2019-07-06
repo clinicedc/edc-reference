@@ -1,6 +1,5 @@
 from django.test import TestCase, tag
-
-from ..refsets import Fieldset, FieldsetError
+from edc_reference.refsets import Fieldset, FieldsetError
 
 
 class DummyRefset:

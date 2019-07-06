@@ -57,13 +57,13 @@ class SiteReference:
         self.loaded = False
         self.registered_from_visit_schedules = False
 
-    def register(self, reference=None):
-        if reference.name in self.registry:
+    def register(self, reference_config=None):
+        if reference_config.name in self.registry:
             raise AlreadyRegistered(
                 f"Reference fields have already been registered. "
-                f"Got {reference.name}"
+                f"Got {reference_config.name}"
             )
-        self.registry.update({reference.name: reference})
+        self.registry.update({reference_config.name: reference_config})
         self.loaded = True
 
     def reregister(self, reference=None):
@@ -123,21 +123,25 @@ class SiteReference:
                 errors.update({name: str(e)})
         return errors
 
-    def autodiscover(self, module_name=None):
+    def autodiscover(self, module_name=None, verbose=None):
         """Autodiscovers classes in the reference_model_configs.py file of any
         INSTALLED_APP.
         """
         module_name = module_name or "reference_model_configs"
-        sys.stdout.write(f" * checking for {module_name} ...\n")
+        verbose = True if verbose is None else verbose
+        if verbose:
+            sys.stdout.write(f" * checking for {module_name} ...\n")
         for app in django_apps.app_configs:
             try:
                 mod = import_module(app)
                 try:
                     before_import_registry = copy.copy(site_reference_configs.registry)
                     import_module(f"{app}.{module_name}")
-                    sys.stdout.write(
-                        f" * registered reference model configs from application '{app}'\n"
-                    )
+                    if verbose:
+                        sys.stdout.write(
+                            f" * registered reference model configs "
+                            f"from application '{app}'\n"
+                        )
                 except Exception as e:
                     if f"No module named '{app}.{module_name}'" not in str(e):
                         site_reference_configs.registry = before_import_registry
@@ -169,6 +173,11 @@ class SiteReference:
         self.registered_visit_model = True
         site_labs.autodiscover(verbose=False)
         site_visit_schedules.autodiscover(verbose=False)
+        if not site_visit_schedules.registry:
+            raise SiteReferenceConfigError(
+                "No visit schedules are registered. "
+                "Unable to register references from any visit schedule."
+            )
         for visit_schedule in site_visit_schedules.registry.values():
             for schedule in visit_schedule.schedules.values():
                 reference = self.reference_updater.update(
@@ -210,6 +219,10 @@ class SiteReference:
     def add_fields_to_config(self, name=None, fields=None):
         reference_config = self.get_config(name=name)
         reference_config.add_fields(fields)
+
+    def remove_fields_from_config(self, name=None, fields=None):
+        reference_config = self.get_config(name=name)
+        reference_config.remove_fields(fields)
 
 
 site_reference_configs = SiteReference()

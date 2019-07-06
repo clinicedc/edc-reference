@@ -27,6 +27,6 @@ class ReferenceDeleter:
         return dict(
             identifier=self.model_obj.visit.subject_identifier,
             report_datetime=self.model_obj.visit.report_datetime,
-            timepoint=self.model_obj.visit.visit_code,
+            timepoint=self.model_obj.visit.timepoint,
             model=self.model_obj.reference_name,
         )
