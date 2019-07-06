@@ -214,8 +214,7 @@ class TestRefset(TestCase):
             if field == "report_datetime":
                 self.assertEqual(value, self.subject_visits[0].report_datetime)
             elif field == "timepoint":
-                self.assertEqual(
-                    value, self.subject_visits[0].timepoint, msg=field)
+                self.assertEqual(value, self.subject_visits[0].timepoint, msg=field)
 
     def test_if_reference_updates_fields(self):
         for index, subject_visit in enumerate(self.subject_visits):
@@ -237,8 +236,6 @@ class TestRefset(TestCase):
                             value, subject_visit.report_datetime, msg=field
                         )
                     elif field == "timepoint":
-                        self.assertEqual(
-                            value, subject_visit.timepoint, msg=field)
+                        self.assertEqual(value, subject_visit.timepoint, msg=field)
                     else:
-                        self.assertEqual(value, getattr(
-                            crf_one, field), msg=field)
+                        self.assertEqual(value, getattr(crf_one, field), msg=field)
