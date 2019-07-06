@@ -40,12 +40,14 @@ class TestRefset(TestCase):
                 visit_code=f"{index}000",
                 timepoint=Decimal(f"{index-1}.0"),
             )
-            self.subject_visits.append(SubjectVisit.objects.create(
-                appointment=appointment,
-                subject_identifier=self.subject_identifier,
-                report_datetime=dte - relativedelta(days=days),
-                reason=SCHEDULED,
-            ))
+            self.subject_visits.append(
+                SubjectVisit.objects.create(
+                    appointment=appointment,
+                    subject_identifier=self.subject_identifier,
+                    report_datetime=dte - relativedelta(days=days),
+                    reason=SCHEDULED,
+                )
+            )
 
         for index, subject_visit in enumerate(
             SubjectVisit.objects.filter(
@@ -67,6 +69,8 @@ class TestRefset(TestCase):
             name="reference_app.blah",
             subject_identifier=self.subject_identifier,
             report_datetime=self.subject_visits[0].report_datetime,
+            visit_schedule_name=self.subject_visits[0].visit_schedule_name,
+            schedule_name=self.subject_visits[0].schedule_name,
             timepoint=self.subject_visits[0].timepoint,
             reference_model_cls=Reference,
         )
@@ -78,6 +82,8 @@ class TestRefset(TestCase):
             name="reference_app.crfone",
             subject_identifier=self.subject_identifier,
             report_datetime=self.subject_visits[0].report_datetime,
+            visit_schedule_name=self.subject_visits[0].visit_schedule_name,
+            schedule_name=self.subject_visits[0].schedule_name,
             timepoint=self.subject_visits[0].timepoint,
             reference_model_cls=None,
         )
@@ -89,6 +95,8 @@ class TestRefset(TestCase):
             name="reference_app.crfone",
             subject_identifier=self.subject_identifier,
             report_datetime=None,
+            visit_schedule_name=self.subject_visits[0].visit_schedule_name,
+            schedule_name=self.subject_visits[0].schedule_name,
             timepoint=self.subject_visits[0].timepoint,
             reference_model_cls=Reference,
         )
@@ -100,6 +108,8 @@ class TestRefset(TestCase):
             name="reference_app.crfone",
             subject_identifier=None,
             report_datetime=self.subject_visits[0].report_datetime,
+            visit_schedule_name=self.subject_visits[0].visit_schedule_name,
+            schedule_name=self.subject_visits[0].schedule_name,
             timepoint=self.subject_visits[0].timepoint,
             reference_model_cls=Reference,
         )
@@ -111,6 +121,8 @@ class TestRefset(TestCase):
             name="reference_app.crfone",
             subject_identifier=self.subject_identifier,
             report_datetime=self.subject_visits[0].report_datetime,
+            visit_schedule_name=self.subject_visits[0].visit_schedule_name,
+            schedule_name=self.subject_visits[0].schedule_name,
             timepoint=None,
             reference_model_cls=Reference,
         )
@@ -121,6 +133,8 @@ class TestRefset(TestCase):
             name="reference_app.crfone",
             subject_identifier=self.subject_identifier,
             report_datetime=self.subject_visits[0].report_datetime,
+            visit_schedule_name=self.subject_visits[0].visit_schedule_name,
+            schedule_name=self.subject_visits[0].schedule_name,
             timepoint=self.subject_visits[0].timepoint,
             reference_model_cls=Reference,
         )
@@ -133,6 +147,8 @@ class TestRefset(TestCase):
             name="reference_app.crfone",
             subject_identifier=self.subject_identifier,
             report_datetime=self.subject_visits[0].report_datetime,
+            visit_schedule_name=self.subject_visits[0].visit_schedule_name,
+            schedule_name=self.subject_visits[0].schedule_name,
             timepoint=self.subject_visits[0].timepoint,
             reference_model_cls=Reference,
         )
@@ -143,6 +159,8 @@ class TestRefset(TestCase):
             name="reference_app.crfone",
             subject_identifier=self.subject_identifier,
             report_datetime=get_utcnow(),
+            visit_schedule_name=self.subject_visits[0].visit_schedule_name,
+            schedule_name=self.subject_visits[0].schedule_name,
             timepoint=self.subject_visits[0].timepoint,
             reference_model_cls=Reference,
         )
@@ -153,6 +171,8 @@ class TestRefset(TestCase):
             name="reference_app.crfone",
             subject_identifier=self.subject_identifier,
             report_datetime=get_utcnow(),
+            visit_schedule_name=self.subject_visits[1].visit_schedule_name,
+            schedule_name=self.subject_visits[1].schedule_name,
             timepoint=self.subject_visits[1].timepoint,
             reference_model_cls=Reference,
         )
@@ -162,6 +182,8 @@ class TestRefset(TestCase):
             name="reference_app.crfone",
             subject_identifier=self.subject_identifier,
             report_datetime=get_utcnow(),
+            visit_schedule_name=self.subject_visits[2].visit_schedule_name,
+            schedule_name=self.subject_visits[2].schedule_name,
             timepoint=self.subject_visits[2].timepoint,
             reference_model_cls=Reference,
         )
@@ -172,6 +194,8 @@ class TestRefset(TestCase):
             name="reference_app.crfone",
             subject_identifier=self.subject_identifier,
             report_datetime=self.subject_visits[0].report_datetime,
+            visit_schedule_name=self.subject_visits[0].visit_schedule_name,
+            schedule_name=self.subject_visits[0].schedule_name,
             timepoint=self.subject_visits[0].timepoint,
             reference_model_cls=Reference,
         )
@@ -179,8 +203,7 @@ class TestRefset(TestCase):
             if field == "report_datetime":
                 self.assertEqual(value, self.subject_visits[0].report_datetime)
             elif field == "timepoint":
-                self.assertEqual(
-                    value, self.subject_visits[0].timepoint, msg=field)
+                self.assertEqual(value, self.subject_visits[0].timepoint, msg=field)
 
     def test_if_reference_updates_fields(self):
         for index, subject_visit in enumerate(self.subject_visits):
@@ -189,6 +212,8 @@ class TestRefset(TestCase):
                     name="reference_app.crfone",
                     subject_identifier=subject_visit.subject_identifier,
                     report_datetime=subject_visit.report_datetime,
+                    visit_schedule_name=subject_visit.visit_schedule_name,
+                    schedule_name=subject_visit.schedule_name,
                     timepoint=subject_visit.timepoint,
                     reference_model_cls=Reference,
                 )
@@ -199,8 +224,6 @@ class TestRefset(TestCase):
                             value, subject_visit.report_datetime, msg=field
                         )
                     elif field == "timepoint":
-                        self.assertEqual(
-                            value, subject_visit.timepoint, msg=field)
+                        self.assertEqual(value, subject_visit.timepoint, msg=field)
                     else:
-                        self.assertEqual(value, getattr(
-                            crf_one, field), msg=field)
+                        self.assertEqual(value, getattr(crf_one, field), msg=field)

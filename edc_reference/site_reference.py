@@ -135,8 +135,7 @@ class SiteReference:
             try:
                 mod = import_module(app)
                 try:
-                    before_import_registry = copy.copy(
-                        site_reference_configs.registry)
+                    before_import_registry = copy.copy(site_reference_configs.registry)
                     import_module(f"{app}.{module_name}")
                     if verbose:
                         sys.stdout.write(
@@ -177,7 +176,8 @@ class SiteReference:
         if not site_visit_schedules.registry:
             raise SiteReferenceConfigError(
                 "No visit schedules are registered. "
-                "Unable to register references from any visit schedule.")
+                "Unable to register references from any visit schedule."
+            )
         for visit_schedule in site_visit_schedules.registry.values():
             for schedule in visit_schedule.schedules.values():
                 reference = self.reference_updater.update(

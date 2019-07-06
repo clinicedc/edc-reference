@@ -49,8 +49,7 @@ class LongitudinalRefsets:
         try:
             self.visit_references = reference_model_cls.objects.filter(**opts)
         except ValueError as e:
-            raise LongitudinalRefsetsError(
-                f"{e}. name={self.name}. Got {opts}.")
+            raise LongitudinalRefsetsError(f"{e}. name={self.name}. Got {opts}.")
         self._refsets = []
         for visit_reference in self.visit_references:
             self._refsets.append(
@@ -58,6 +57,9 @@ class LongitudinalRefsets:
                     name=self.name,
                     subject_identifier=subject_identifier,
                     report_datetime=visit_reference.report_datetime,
+                    visit_schedule_name=visit_reference.visit_schedule_name,
+                    schedule_name=visit_reference.schedule_name,
+                    visit_code=visit_reference.visit_code,
                     timepoint=visit_reference.timepoint,
                     reference_model_cls=reference_model_cls,
                 )
@@ -92,16 +94,13 @@ class LongitudinalRefsets:
             field = field[1:]
             reverse = True
         try:
-            self._refsets.sort(key=lambda x: getattr(
-                x, field), reverse=reverse)
+            self._refsets.sort(key=lambda x: getattr(x, field), reverse=reverse)
         except TypeError:
-            null_refsets = [
-                x for x in self._refsets if getattr(x, field) is None]
+            null_refsets = [x for x in self._refsets if getattr(x, field) is None]
             notnull_refsets = [
                 x for x in self._refsets if getattr(x, field) is not None
             ]
-            notnull_refsets.sort(
-                key=lambda x: getattr(x, field), reverse=reverse)
+            notnull_refsets.sort(key=lambda x: getattr(x, field), reverse=reverse)
             self._refsets = notnull_refsets + null_refsets
         return self
 

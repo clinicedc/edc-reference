@@ -21,6 +21,9 @@ class Refset:
         name=None,
         subject_identifier=None,
         report_datetime=None,
+        visit_schedule_name=None,
+        schedule_name=None,
+        visit_code=None,
         timepoint=None,
         reference_model_cls=None,
     ):
@@ -30,6 +33,12 @@ class Refset:
         self._fields = {}
         if not report_datetime:
             raise RefsetError("Expected report_datetime. Got None")
+        if not visit_schedule_name:
+            raise RefsetError("Expected visit_schedule_name. Got None")
+        if not schedule_name:
+            raise RefsetError("Expected schedule_name. Got None")
+        if not visit_code:
+            raise RefsetError("Expected visit_code. Got None")
         if timepoint is None:
             raise RefsetError("Expected timepoint. Got None")
         if not subject_identifier:
@@ -38,6 +47,9 @@ class Refset:
             raise RefsetError("Expected reference_model_cls. Got None")
         self.subject_identifier = subject_identifier
         self.report_datetime = report_datetime
+        self.visit_schedule_name = visit_schedule_name
+        self.schedule_name = schedule_name
+        self.visit_code = visit_code
         self.timepoint = timepoint
         self.name = name
         self.reference_model_cls = reference_model_cls
@@ -63,6 +75,8 @@ class Refset:
         """
         opts = dict(
             identifier=self.subject_identifier,
+            visit_schedule_name=self.visit_schedule_name,
+            schedule_name=self.schedule_name,
             timepoint=self.timepoint,
             model=self.name,
         )
@@ -75,8 +89,7 @@ class Refset:
             references = self.reference_model_cls.objects.filter(**opts)
             for field_name in self._fields:
                 try:
-                    obj = [
-                        obj for obj in references if obj.field_name == field_name][0]
+                    obj = [obj for obj in references if obj.field_name == field_name][0]
                 except IndexError:
                     self._fields.update({field_name: None})
                 else:
@@ -93,11 +106,11 @@ class Refset:
                             f"Got {existing_value} == {value}. See {self.name}"
                         )
             self._fields.update(report_datetime=self.report_datetime)
-            # self._fields.update(timepoint=self.timepoint)
 
     def __repr__(self):
         return (
             f"{self.__class__.__name__}(name={self.name},"
             f"subject_identifier={self.subject_identifier},"
+            f"{self.visit_schedule_name}.{self.schedule_name}@"
             f"timepoint={self.timepoint}) <{[f for f in self._fields]}>"
         )

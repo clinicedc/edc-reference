@@ -23,16 +23,15 @@ class TestCase(BaseTestCase):
         site_consents.register(v1)
         site_visit_schedules._registry = {}
         site_visit_schedules.register(visit_schedule)
-        Site.objects.create(
-            id=10, name="edc", domain="edc.example.com")
+        Site.objects.create(id=10, name="edc", domain="edc.example.com")
 
     def setUp(self):
         site_reference_configs.registry = {}
         site_reference_configs.loaded = False
 
         ref_config = ReferenceModelConfig(
-            name="reference_app.subjectvisit", fields=[
-                "report_datetime", "visit_code", "visit_code_sequence"]
+            name="reference_app.subjectvisit",
+            fields=["report_datetime", "visit_code", "visit_code_sequence"],
         )
         site_reference_configs.register(ref_config)
 
@@ -73,8 +72,8 @@ class TestCase(BaseTestCase):
             report_datetime=get_utcnow() - relativedelta(days=10),
             reason=SCHEDULED,
             appointment=appointment,
-            visit_schedule_name='visit_schedule',
+            visit_schedule_name="visit_schedule",
             schedule_name="schedule",
             visit_code="1000",
-            visit_code_sequence=0
+            visit_code_sequence=0,
         )

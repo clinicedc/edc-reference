@@ -3,7 +3,11 @@ from decimal import Decimal
 from django.test import TestCase, tag
 from edc_appointment.models import Appointment
 from edc_reference.models import Reference
-from edc_reference.refsets import LongitudinalRefsets, InvalidOrdering, NoRefsetObjectsExist
+from edc_reference.refsets import (
+    LongitudinalRefsets,
+    InvalidOrdering,
+    NoRefsetObjectsExist,
+)
 from edc_utils import get_utcnow
 from edc_visit_tracking.constants import SCHEDULED
 from reference_app.models import SubjectVisit, CrfOne, SubjectConsent
@@ -66,7 +70,9 @@ class TestLongitudinal(TestCase):
             reference_model_cls=Reference,
         )
         self.assertEqual(
-            [refset.timepoint for refset in refsets], ["0.0", "1.0", "2.0"])
+            [refset.timepoint for refset in refsets],
+            [Decimal("0.0"), Decimal("1.0"), Decimal("2.0")],
+        )
 
     def test_longitudinal_refset_uses_subject_visit_report_datetime(self):
         longitudinal_refsets = LongitudinalRefsets(
@@ -104,17 +110,25 @@ class TestLongitudinal(TestCase):
             name="reference_app.crfone",
             reference_model_cls=Reference,
         ).order_by("-report_datetime")
-        self.assertEqual([ref.timepoint for ref in refsets],
-                         ["2.0", "1.0", "0.0"])
+        self.assertEqual(
+            [ref.timepoint for ref in refsets],
+            [Decimal("2.0"), Decimal("1.0"), Decimal("0.0")],
+        )
         refsets.order_by("-timepoint")
-        self.assertEqual([ref.timepoint for ref in refsets],
-                         ["2.0", "1.0", "0.0"])
+        self.assertEqual(
+            [ref.timepoint for ref in refsets],
+            [Decimal("2.0"), Decimal("1.0"), Decimal("0.0")],
+        )
         refsets.order_by("report_datetime")
-        self.assertEqual([ref.timepoint for ref in refsets],
-                         ["0.0", "1.0", "2.0"])
+        self.assertEqual(
+            [ref.timepoint for ref in refsets],
+            [Decimal("0.0"), Decimal("1.0"), Decimal("2.0")],
+        )
         refsets.order_by("timepoint")
-        self.assertEqual([ref.timepoint for ref in refsets],
-                         ["0.0", "1.0", "2.0"])
+        self.assertEqual(
+            [ref.timepoint for ref in refsets],
+            [Decimal("0.0"), Decimal("1.0"), Decimal("2.0")],
+        )
 
     def test_bad_ordering(self):
         self.assertRaises(
@@ -139,8 +153,7 @@ class TestLongitudinal(TestCase):
             refset.fieldset("field_str").all().values, ["NEG", "POS", "POS"]
         )
         self.assertEqual(
-            refset.fieldset("field_str").all().order_by(
-                "-report_datetime").values,
+            refset.fieldset("field_str").all().order_by("-report_datetime").values,
             ["POS", "POS", "NEG"],
         )
 
@@ -152,13 +165,11 @@ class TestLongitudinal(TestCase):
             reference_model_cls=Reference,
         )
         self.assertEqual(
-            refsets.fieldset("field_str").all().order_by(
-                "field_datetime").values,
+            refsets.fieldset("field_str").all().order_by("field_datetime").values,
             ["NEG", "POS", "POS"],
         )
         self.assertEqual(
-            refsets.fieldset("field_str").order_by(
-                "-field_datetime").all().values,
+            refsets.fieldset("field_str").order_by("-field_datetime").all().values,
             ["POS", "POS", "NEG"],
         )
 
@@ -170,12 +181,10 @@ class TestLongitudinal(TestCase):
             reference_model_cls=Reference,
         )
         self.assertEqual(
-            refsets.fieldset("field_str").order_by(
-                "field_datetime").last(), "POS"
+            refsets.fieldset("field_str").order_by("field_datetime").last(), "POS"
         )
         self.assertEqual(
-            refsets.fieldset("field_str").order_by(
-                "-field_datetime").last(), "NEG"
+            refsets.fieldset("field_str").order_by("-field_datetime").last(), "NEG"
         )
 
     def test_repr(self):

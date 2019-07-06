@@ -3,6 +3,7 @@ from edc_model.models import BaseUuidModel
 from edc_sites.models import CurrentSiteManager, SiteModelMixin
 
 from .managers import ReferenceManager
+from django.core.exceptions import FieldError
 
 
 class ReferenceFieldDatatypeNotFound(Exception):
@@ -13,7 +14,13 @@ class Reference(SiteModelMixin, BaseUuidModel):
 
     identifier = models.CharField(max_length=50)
 
-    timepoint = models.CharField(max_length=50)
+    visit_schedule_name = models.CharField(max_length=150)
+
+    schedule_name = models.CharField(max_length=150)
+
+    visit_code = models.CharField(max_length=150)
+
+    timepoint = models.DecimalField(decimal_places=1, max_digits=6)
 
     report_datetime = models.DateTimeField()
 
@@ -45,9 +52,25 @@ class Reference(SiteModelMixin, BaseUuidModel):
             f"{self.field_name}={self.value}"
         )
 
+    def save(self, *args, **kwargs):
+        if not self.visit_schedule_name:
+            raise FieldError("visit_schedule_name cannot be None")
+        if not self.schedule_name:
+            raise FieldError("schedule_name cannot be None")
+        if not self.visit_code:
+            raise FieldError("visit_code cannot be None")
+        if not self.visit_code:
+            raise FieldError("visit_code cannot be None")
+        if self.timepoint is None:
+            raise FieldError("timepoint cannot be None")
+        super().save(*args, **kwargs)
+
     def natural_key(self):
         return (
             self.identifier,
+            self.visit_schedule_name,
+            self.schedule_name,
+            self.visit_code,
             self.timepoint,
             self.report_datetime,
             self.model,
@@ -108,18 +131,33 @@ class Reference(SiteModelMixin, BaseUuidModel):
     class Meta:
         unique_together = [
             "identifier",
+            "visit_schedule_name",
+            "schedule_name",
+            "visit_code",
             "timepoint",
             "report_datetime",
             "model",
             "field_name",
         ]
-        ordering = ("identifier", "report_datetime",
-                    "timepoint", "model", "field_name")
+        ordering = (
+            "identifier",
+            "report_datetime",
+            "visit_schedule_name",
+            "schedule_name",
+            "timepoint",
+            "model",
+            "field_name",
+        )
         indexes = [
             models.Index(
-                fields=["identifier", "timepoint", "model", "field_name"]),
-            models.Index(
-                fields=["identifier", "report_datetime",
-                        "timepoint", "model", "field_name"]
-            ),
+                fields=[
+                    "identifier",
+                    "visit_schedule_name",
+                    "schedule_name",
+                    "visit_code",
+                    "timepoint",
+                    "model",
+                    "field_name",
+                ]
+            )
         ]
