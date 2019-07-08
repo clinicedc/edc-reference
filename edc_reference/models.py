@@ -14,13 +14,15 @@ class Reference(SiteModelMixin, BaseUuidModel):
 
     identifier = models.CharField(max_length=50)
 
-    visit_schedule_name = models.CharField(max_length=150)
+    visit_schedule_name = models.CharField(max_length=150, null=True)
 
-    schedule_name = models.CharField(max_length=150)
+    schedule_name = models.CharField(max_length=150, null=True)
 
-    visit_code = models.CharField(max_length=150)
+    visit_code = models.CharField(max_length=150, null=True)
 
-    timepoint = models.DecimalField(decimal_places=1, max_digits=6)
+    visit_code_sequence = models.IntegerField(null=True)
+
+    timepoint = models.DecimalField(decimal_places=1, max_digits=6, null=True)
 
     report_datetime = models.DateTimeField()
 
@@ -48,8 +50,9 @@ class Reference(SiteModelMixin, BaseUuidModel):
 
     def __str__(self):
         return (
-            f"{self.identifier}@{self.timepoint} {self.model}."
-            f"{self.field_name}={self.value}"
+            f"{self.identifier} {self.visit_schedule_name}.{self.schedule_name}."
+            f"{self.visit_code}.{self.visit_code_sequence}@{self.timepoint} "
+            f"{self.model}.{self.field_name}={self.value}"
         )
 
     def save(self, *args, **kwargs):
@@ -134,6 +137,7 @@ class Reference(SiteModelMixin, BaseUuidModel):
             "visit_schedule_name",
             "schedule_name",
             "visit_code",
+            "visit_code_sequence",
             "timepoint",
             "report_datetime",
             "model",

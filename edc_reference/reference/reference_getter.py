@@ -30,12 +30,16 @@ class ReferenceGetter:
         visit_schedule_name=None,
         schedule_name=None,
         visit_code=None,
+        visit_code_sequence=None,
         timepoint=None,
         create=None,
     ):
-        self._object = None
+        self._reference_obj = None
+        self.created = None
         self.value = None
         self.has_value = False
+
+        self.create = create
         self.field_name = field_name
 
         if model_obj:
@@ -46,6 +50,7 @@ class ReferenceGetter:
                 self.visit_schedule_name = model_obj.visit.visit_schedule_name
                 self.schedule_name = model_obj.visit.schedule_name
                 self.visit_code = model_obj.visit.visit_code
+                self.visit_code_sequence = model_obj.visit.visit_code_sequence
                 self.timepoint = model_obj.visit.timepoint
                 self.name = model_obj.reference_name
             except AttributeError:
@@ -55,6 +60,7 @@ class ReferenceGetter:
                 self.visit_schedule_name = model_obj.visit_schedule_name
                 self.schedule_name = model_obj.schedule_name
                 self.visit_code = model_obj.visit_code
+                self.visit_code_sequence = model_obj.visit_code_sequence
                 self.timepoint = model_obj.timepoint
                 self.name = model_obj.reference_name
         elif visit_obj:
@@ -64,6 +70,7 @@ class ReferenceGetter:
             self.visit_schedule_name = visit_obj.visit_schedule_name
             self.schedule_name = visit_obj.schedule_name
             self.visit_code = visit_obj.visit_code
+            self.visit_code_sequence = visit_obj.visit_code_sequence
             self.timepoint = visit_obj.timepoint
         else:
             # given only the attrs
@@ -73,20 +80,17 @@ class ReferenceGetter:
             self.visit_schedule_name = visit_schedule_name
             self.schedule_name = schedule_name
             self.visit_code = visit_code
+            self.visit_code_sequence = visit_code_sequence
             self.timepoint = timepoint
-        reference_model = site_reference_configs.get_reference_model(name=self.name)
-        reference_model_cls = django_apps.get_model(reference_model)
-        try:
-            self.object = reference_model_cls.objects.get(**self._options)
-        except ObjectDoesNotExist as e:
-            if create:
-                self.object = reference_model_cls.objects.create(**self._options)
-                # note: updater needs to "update_value"
-            else:
-                raise ReferenceObjectDoesNotExist(f"{e}. Using {self._options}")
-        else:
-            self.value = getattr(self.object, "value")
-            self.has_value = True
+
+        reference_model = site_reference_configs.get_reference_model(
+            name=self.name)
+        self.reference_model_cls = django_apps.get_model(reference_model)
+
+        self.object, _ = self.get_or_create_reference()
+        # note: updater needs to "update_value"
+        self.value = getattr(self.object, "value")
+        self.has_value = True
         setattr(self, self.field_name, self.value)
 
     def __repr__(self):
@@ -96,15 +100,59 @@ class ReferenceGetter:
             f") value={self.value}, has_value={self.has_value}>"
         )
 
-    @property
-    def _options(self):
+    def required_options(self):
+        """Returns a dictionary of query options required for both
+        get and create.
+        """
         return dict(
             identifier=self.subject_identifier,
             model=self.name,
             report_datetime=self.report_datetime,
+            field_name=self.field_name,
+        )
+
+    def visit_options(self):
+        """Returns a dictionary of query options of the visit attrs.
+        """
+        return dict(
             visit_schedule_name=self.visit_schedule_name,
             schedule_name=self.schedule_name,
             visit_code=self.visit_code,
+            visit_code_sequence=self.visit_code_sequence,
             timepoint=self.timepoint,
-            field_name=self.field_name,
         )
+
+    def create_reference_obj(self):
+        """Returns a newly create reference instance.
+
+        Note: updater needs to "update_value".
+        """
+        if {k: v for k, v in self.visit_options.items() if v is None}:
+            raise ReferenceGetterError(
+                f"Unable to create a reference instance. "
+                f"Null values for visit attrs not allowed. "
+                f"Got {self.visit_options}."
+            )
+        return self.reference_model_cls.objects.create(
+            **self.required_options, **self.visit_options
+        )
+
+    @property
+    def reference_obj(self):
+        if not self._reference_obj:
+            self.created = False
+            opts = dict(
+                **self.required_options,
+                **{k: v for k, v in self.visit_options.items() if v is not None},
+            )
+            try:
+                self._reference_obj = self.reference_model_cls.objects.get(
+                    **opts)
+            except ObjectDoesNotExist as e:
+                if self.create:
+                    self._reference_obj = self.create_reference_obj()
+                    self.created = True
+                else:
+                    raise ReferenceObjectDoesNotExist(
+                        f"{e}. Using {opts}")
+        return self._reference_obj
