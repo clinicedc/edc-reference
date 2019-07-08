@@ -6,14 +6,19 @@ from django.test import TestCase, tag
 from edc_appointment.models import Appointment
 from edc_lab.models.panel import Panel
 from edc_reference.models import Reference, ReferenceFieldDatatypeNotFound
-from edc_reference.reference import ReferenceDeleter, ReferenceGetter
-from edc_reference.reference import ReferenceObjectDoesNotExist
-from edc_reference.reference import ReferenceUpdater, ReferenceFieldNotFound
+from edc_reference.reference import (
+    ReferenceDeleter,
+    ReferenceGetter,
+    ReferenceGetterError,
+    ReferenceObjectDoesNotExist,
+    ReferenceUpdater,
+    ReferenceFieldNotFound,
+)
 from edc_reference.reference_model_config import (
     ReferenceDuplicateField,
     ReferenceFieldValidationError,
+    ReferenceModelConfig,
 )
-from edc_reference.reference_model_config import ReferenceModelConfig
 from edc_reference.site_reference import site_reference_configs
 from edc_utils import get_utcnow
 from edc_visit_tracking.constants import SCHEDULED
@@ -424,12 +429,37 @@ class TestReferenceModel(TestCase):
         )
         self.assertEqual(reference.field_int, integer)
 
+    @tag("1")
     def test_reference_getter_without_using_model_obj(self):
         integer = 100
         crf_one = CrfOne.objects.create(
-            subject_visit=self.subject_visit, field_int=integer
+            subject_visit=self.subject_visit,
+            field_int=integer,
+            report_datetime=self.subject_visit.report_datetime,
         )
-        reference = ReferenceGetter(
+        opts = dict(
+            name="reference_app.crfone",
+            field_name="field_int",
+            subject_identifier=self.subject_identifier,
+            report_datetime=crf_one.visit.report_datetime,
+            visit_schedule_name=crf_one.visit.visit_schedule_name,
+            schedule_name=crf_one.visit.schedule_name,
+            visit_code=crf_one.visit.visit_code,
+            visit_code_sequence=crf_one.visit.visit_code_sequence,
+            timepoint=crf_one.visit.timepoint,
+        )
+        reference = ReferenceGetter(**opts)
+        self.assertEqual(reference.field_int, integer)
+
+    @tag("1")
+    def test_reference_getter_without_using_model_obj_and_missing_visit_attr(self):
+        integer = 100
+        crf_one = CrfOne.objects.create(
+            subject_visit=self.subject_visit,
+            field_int=integer,
+            report_datetime=self.subject_visit.report_datetime,
+        )
+        opts = dict(
             name="reference_app.crfone",
             field_name="field_int",
             subject_identifier=self.subject_identifier,
@@ -439,7 +469,33 @@ class TestReferenceModel(TestCase):
             visit_code=crf_one.visit.visit_code,
             timepoint=crf_one.visit.timepoint,
         )
+        reference = ReferenceGetter(**opts)
         self.assertEqual(reference.field_int, integer)
+
+    @tag("1")
+    def test_reference_getter_raises(self):
+        """Assert raises if reference instance does not exist
+        and not create.
+        """
+        opts = dict(
+            name="reference_app.crfone",
+            field_name="field_int",
+            subject_identifier=self.subject_identifier,
+            report_datetime=self.subject_visit.report_datetime,
+        )
+        self.assertRaises(ReferenceObjectDoesNotExist, ReferenceGetter, **opts)
+
+    @tag("1")
+    def test_reference_getter_raises_missing_visit_attrs_on_create(self):
+        """Assert raises if not all visit attrs are provided for create.
+        """
+        opts = dict(
+            name="reference_app.crfone",
+            field_name="field_int",
+            subject_identifier=self.subject_identifier,
+            report_datetime=self.subject_visit.report_datetime,
+        )
+        self.assertRaises(ReferenceGetterError, ReferenceGetter, create=True, **opts)
 
     def test_reference_getter_with_bad_field_raises(self):
         integer = 100
