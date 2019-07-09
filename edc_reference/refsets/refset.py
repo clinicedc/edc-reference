@@ -24,6 +24,7 @@ class Refset:
         visit_schedule_name=None,
         schedule_name=None,
         visit_code=None,
+        visit_code_sequence=None,
         timepoint=None,
         reference_model_cls=None,
     ):
@@ -33,14 +34,6 @@ class Refset:
         self._fields = {}
         if not report_datetime:
             raise RefsetError("Expected report_datetime. Got None")
-        if not visit_schedule_name:
-            raise RefsetError("Expected visit_schedule_name. Got None")
-        if not schedule_name:
-            raise RefsetError("Expected schedule_name. Got None")
-        if not visit_code:
-            raise RefsetError("Expected visit_code. Got None")
-        if timepoint is None:
-            raise RefsetError("Expected timepoint. Got None")
         if not subject_identifier:
             raise RefsetError("Expected subject_identifier. Got None")
         if not reference_model_cls:
@@ -50,6 +43,7 @@ class Refset:
         self.visit_schedule_name = visit_schedule_name
         self.schedule_name = schedule_name
         self.visit_code = visit_code
+        self.visit_code_sequence = visit_code_sequence
         self.timepoint = timepoint
         self.name = name
         self.reference_model_cls = reference_model_cls
@@ -77,9 +71,13 @@ class Refset:
             identifier=self.subject_identifier,
             visit_schedule_name=self.visit_schedule_name,
             schedule_name=self.schedule_name,
+            visit_code=self.visit_code,
+            visit_code_sequence=self.visit_code_sequence,
             timepoint=self.timepoint,
             model=self.name,
         )
+        opts = {k: v for k, v in opts.items() if v is not None}
+
         if self.reference_model_cls.objects.filter(**opts).count() == 0:
             self._fields.update(report_datetime=None)
             for field_name in self._fields:
