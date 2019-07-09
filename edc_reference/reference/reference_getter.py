@@ -34,7 +34,7 @@ class ReferenceGetter:
         timepoint=None,
         create=None,
     ):
-        self._reference_obj = None
+        self._object = None
         self.created = None
         self.value = None
         self.has_value = False
@@ -83,11 +83,9 @@ class ReferenceGetter:
             self.visit_code_sequence = visit_code_sequence
             self.timepoint = timepoint
 
-        reference_model = site_reference_configs.get_reference_model(
-            name=self.name)
+        reference_model = site_reference_configs.get_reference_model(name=self.name)
         self.reference_model_cls = django_apps.get_model(reference_model)
 
-        self.object, _ = self.get_or_create_reference()
         # note: updater needs to "update_value"
         self.value = getattr(self.object, "value")
         self.has_value = True
@@ -100,6 +98,27 @@ class ReferenceGetter:
             f") value={self.value}, has_value={self.has_value}>"
         )
 
+    @property
+    def object(self):
+        """Returns a reference model instance.
+        """
+        if not self._object:
+            self.created = False
+            opts = dict(
+                **self.required_options,
+                **{k: v for k, v in self.visit_options.items() if v is not None},
+            )
+            try:
+                self._object = self.reference_model_cls.objects.get(**opts)
+            except ObjectDoesNotExist as e:
+                if self.create:
+                    self._object = self.create_reference_obj()
+                    self.created = True
+                else:
+                    raise ReferenceObjectDoesNotExist(f"{e}. Using {opts}")
+        return self._object
+
+    @property
     def required_options(self):
         """Returns a dictionary of query options required for both
         get and create.
@@ -111,6 +130,7 @@ class ReferenceGetter:
             field_name=self.field_name,
         )
 
+    @property
     def visit_options(self):
         """Returns a dictionary of query options of the visit attrs.
         """
@@ -136,23 +156,3 @@ class ReferenceGetter:
         return self.reference_model_cls.objects.create(
             **self.required_options, **self.visit_options
         )
-
-    @property
-    def reference_obj(self):
-        if not self._reference_obj:
-            self.created = False
-            opts = dict(
-                **self.required_options,
-                **{k: v for k, v in self.visit_options.items() if v is not None},
-            )
-            try:
-                self._reference_obj = self.reference_model_cls.objects.get(
-                    **opts)
-            except ObjectDoesNotExist as e:
-                if self.create:
-                    self._reference_obj = self.create_reference_obj()
-                    self.created = True
-                else:
-                    raise ReferenceObjectDoesNotExist(
-                        f"{e}. Using {opts}")
-        return self._reference_obj

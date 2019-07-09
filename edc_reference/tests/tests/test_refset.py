@@ -118,20 +118,6 @@ class TestRefset(TestCase):
             reference_model_cls=Reference,
         )
 
-    def test_raises_missing_timepoint(self):
-        self.assertRaises(
-            RefsetError,
-            Refset,
-            name="reference_app.crfone",
-            subject_identifier=self.subject_identifier,
-            report_datetime=self.subject_visits[0].report_datetime,
-            visit_schedule_name=self.subject_visits[0].visit_schedule_name,
-            schedule_name=self.subject_visits[0].schedule_name,
-            visit_code=self.subject_visits[0].visit_code,
-            timepoint=None,
-            reference_model_cls=Reference,
-        )
-
     def test_no_reference_instance(self):
         Reference.objects.all().delete()
         refset = Refset(
