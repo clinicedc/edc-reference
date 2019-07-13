@@ -3,7 +3,7 @@ import sys
 
 from django.apps import apps as django_apps
 from django.conf import settings
-from .models import Reference
+
 from .reference import ReferenceUpdater
 from .site_reference import site_reference_configs
 
@@ -38,6 +38,10 @@ class Populater:
         exclude_names = [n.strip() for n in exclude_names]
         self.names = [n.strip() for n in names if n not in exclude_names]
         self.dry_run = dry_run
+
+    @property
+    def reference_model_cls(self):
+        return django_apps.get_model("edc_reference.reference")
 
     def summarize(self):
         for name in self.names:
@@ -75,7 +79,7 @@ class Populater:
             sys.stdout.write(f" * deleting existing records ... \r")
             if not self.dry_run:
                 for name in names:
-                    Reference.objects.filter(model=name).delete()
+                    self.reference_model_cls.objects.filter(model=name).delete()
             sys.stdout.write(f" * deleting existing records ... done.\n")
 
         for name in names:
