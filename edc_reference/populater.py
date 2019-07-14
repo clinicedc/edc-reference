@@ -3,9 +3,12 @@ import sys
 
 from django.apps import apps as django_apps
 from django.conf import settings
+from django.core.management.color import color_style
 
 from .reference import ReferenceUpdater
-from .site_reference import site_reference_configs
+from .site_reference import site_reference_configs, SiteReferenceConfigError
+
+style = color_style()
 
 
 class PopulaterAttributeError(Exception):
@@ -94,7 +97,17 @@ class Populater:
                 sub_end_time = arrow.utcnow().to(settings.TIME_ZONE).datetime
                 tdelta = sub_end_time - sub_start_time
                 sys.stdout.write(f" * {name} {index} / {total} ... {str(tdelta)}    \r")
-                self.reference_updater_cls(model_obj=model_obj)
+                try:
+                    self.reference_updater_cls(model_obj=model_obj)
+                except SiteReferenceConfigError as e:
+                    if "Model not registered" in str(e):
+                        sys.stdout.write(
+                            style.ERROR(
+                                f" * {name}. Model not registered.                \n"
+                            )
+                        )
+                    else:
+                        raise
             sub_end_time = arrow.utcnow().to(settings.TIME_ZONE).datetime
             tdelta = sub_end_time - sub_start_time
             sys.stdout.write(
