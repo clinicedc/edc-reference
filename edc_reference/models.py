@@ -1,9 +1,9 @@
+from django.core.exceptions import FieldError
 from django.db import models
 from edc_model.models import BaseUuidModel
 from edc_sites.models import CurrentSiteManager, SiteModelMixin
 
 from .managers import ReferenceManager
-from django.core.exceptions import FieldError
 
 
 class ReferenceFieldDatatypeNotFound(Exception):
@@ -44,9 +44,9 @@ class Reference(SiteModelMixin, BaseUuidModel):
 
     related_name = models.CharField(max_length=100, null=True)
 
-    on_site = CurrentSiteManager()
-
     objects = ReferenceManager()
+
+    on_site = CurrentSiteManager()
 
     def __str__(self):
         return (
@@ -83,7 +83,7 @@ class Reference(SiteModelMixin, BaseUuidModel):
     natural_key.dependencies = ["sites.Site"]
 
     def update_value(
-        self, value=None, internal_type=None, field=None, related_name=None
+        self, value=None, internal_type=None, field=None, related_name=None, site=None
     ):
         """Updates the correct `value` field based on the
         field class datatype.
@@ -115,6 +115,8 @@ class Reference(SiteModelMixin, BaseUuidModel):
                 f"Expected a django.models.field internal type like 'CharField', "
                 "'DateTimeField', etc."
             )
+        if site is not None:
+            self.site = site
         self.save()
 
     @property

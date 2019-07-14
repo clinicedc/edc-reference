@@ -36,9 +36,10 @@ class ReferenceUpdater:
                 raise ReferenceFieldNotFound(
                     f"Reference field not found on model. Got '{field_name}'. "
                     f"See reference config for {model_obj.reference_name}. "
-                    f"Model fields are {[fld.name for fld in model_obj._meta.get_fields()]}"
+                    f"Model fields are "
+                    f"{[fld.name for fld in model_obj._meta.get_fields()]}"
                 )
-            reference = self.getter_cls(
+            reference_getter = self.getter_cls(
                 model_obj=model_obj, field_name=field_name, create=True
             )
             if field_obj.name == "report_datetime":
@@ -57,7 +58,10 @@ class ReferenceUpdater:
             else:
                 internal_type = "UUIDField"
                 related_name = getattr(model_obj, field_name)._meta.label_lower
-            reference.object.update_value(
-                internal_type=internal_type, value=value, related_name=related_name
+            reference_getter.object.update_value(
+                internal_type=internal_type,
+                value=value,
+                related_name=related_name,
+                site=model_obj.site,
             )
-            reference.object.save()
+            reference_getter.object.save()

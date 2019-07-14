@@ -4,6 +4,7 @@ import sys
 from django.apps import apps as django_apps
 from django.conf import settings
 from django.core.management.color import color_style
+from tqdm import tqdm
 
 from .reference import ReferenceUpdater
 from .site_reference import site_reference_configs, SiteReferenceConfigError
@@ -50,7 +51,7 @@ class Populater:
         for name in self.names:
             reference_model = site_reference_configs.get_reference_model(name=name)
             reference_model_cls = django_apps.get_model(reference_model)
-            count = reference_model_cls.objects.filter(model=name).count()
+            count = reference_model_cls.on_site.filter(model=name).count()
             sys.stdout.write(f" * {name}: {count} records\n")
 
     def populate(self):
@@ -71,54 +72,63 @@ class Populater:
                 f" - This is a dry run. No data will be created/modified.\n"
             )
 
-        names = [name for name in self.names if not self.skip(name=name)]
+        names = []
+        names_not_registered = []
+        for name in [name for name in self.names if not self.skip(name=name)]:
+            try:
+                site_reference_configs.get_config(name=name)
+            except SiteReferenceConfigError as e:
+                if "Model not registered" in str(e):
+                    names_not_registered.append(name)
+                else:
+                    raise
+            else:
+                names.append(name)
 
-        for name in names:
-            site_reference_configs.get_config(name=name)
-
-        sys.stdout.write(f" * models are {names}    \n")
+        sys.stdout.write(f" - registered models are {', '.join(names)}\n")
+        if names_not_registered:
+            sys.stdout.write(
+                style.ERROR(
+                    f" - unregistered models are {','.join(names_not_registered)}\n"
+                )
+            )
 
         if self.delete_existing:
             sys.stdout.write(f" * deleting existing records ... \r")
             if not self.dry_run:
                 for name in names:
-                    self.reference_model_cls.objects.filter(model=name).delete()
+                    self.reference_model_cls.on_site.filter(model=name).delete()
             sys.stdout.write(f" * deleting existing records ... done.\n")
 
         for name in names:
-            index = 0
-            sys.stdout.write(f" * {name}           \r")
-            model_cls = django_apps.get_model(".".join(name.split(".")[:2]))
-            qs = model_cls.objects.all()
+            qs = self.get_queryset(name)
             total = qs.count()
-            sub_start_time = arrow.utcnow().to(settings.TIME_ZONE).datetime
-            for index, model_obj in enumerate(qs):
-                index += 1
-                sub_end_time = arrow.utcnow().to(settings.TIME_ZONE).datetime
-                tdelta = sub_end_time - sub_start_time
-                sys.stdout.write(f" * {name} {index} / {total} ... {str(tdelta)}    \r")
+            for model_obj in tqdm(qs, total=total, desc=name):
                 try:
                     self.reference_updater_cls(model_obj=model_obj)
                 except SiteReferenceConfigError as e:
                     if "Model not registered" in str(e):
-                        sys.stdout.write(
-                            style.ERROR(
-                                f" * {name}. Model not registered.                \n"
-                            )
-                        )
+                        pass
                     else:
                         raise
-            sub_end_time = arrow.utcnow().to(settings.TIME_ZONE).datetime
-            tdelta = sub_end_time - sub_start_time
-            sys.stdout.write(
-                f" * {name} {index} / {total} . OK  in {str(tdelta)}      \n"
-            )
-        t_end = arrow.utcnow().to(settings.TIME_ZONE).strftime("%H:%M")
-        sys.stdout.write(f"Done. Ended: {t_end}\n")
+        sys.stdout.write(f"Done (Site {settings.SITE_ID}).\n")
+
+    def get_queryset(self, name=None):
+        try:
+            app_label, model_name, panel_name = name.split(".")
+        except ValueError:
+            panel_name = None
+            app_label, model_name = name.split(".")
+        model_cls = django_apps.get_model(app_label, model_name)
+        if panel_name:
+            qs = model_cls.on_site.filter(panel__name=panel_name)
+        else:
+            qs = model_cls.on_site.all()
+        return qs
 
     def skip(self, name=None):
         if self.skip_existing:
             reference_model = site_reference_configs.get_reference_model(name=name)
             reference_model_cls = django_apps.get_model(reference_model)
-            return reference_model_cls.objects.filter(model=name).exists()
+            return reference_model_cls.on_site.filter(model=name).exists()
         return False
