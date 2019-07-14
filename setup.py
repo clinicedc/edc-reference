@@ -37,6 +37,7 @@ setup(
         'edc-navbar',
         'edc-sites',
         'edc-utils',
+	'tqdm',
     ],
     classifiers=[
         'Environment :: Web Environment',

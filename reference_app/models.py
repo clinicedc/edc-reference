@@ -8,7 +8,7 @@ from edc_visit_tracking.model_mixins.visit_model_mixin.visit_model_mixin import 
 from edc_visit_schedule.model_mixins.on_schedule_model_mixin import OnScheduleModelMixin
 from edc_visit_schedule.model_mixins.off_schedule_model_mixin import OffScheduleModelMixin
 from edc_offstudy.model_mixins.offstudy_model_mixin import OffstudyModelMixin
-from edc_sites.models import SiteModelMixin
+from edc_sites.models import SiteModelMixin, CurrentSiteManager
 from edc_identifier.model_mixins.subject_identifier_model_mixins import UniqueSubjectIdentifierFieldMixin
 from edc_identifier.managers import SubjectIdentifierManager
 from edc_consent.model_mixins.consent_model_mixin import ConsentModelMixin
@@ -51,6 +51,8 @@ class SubjectConsent(
     BaseUuidModel,
 ):
 
+    on_site = CurrentSiteManager()
+
     objects = SubjectIdentifierManager()
 
     def natural_key(self):
@@ -65,10 +67,12 @@ class SubjectVisit(
     BaseUuidModel,
 ):
 
-    pass
+    on_site = CurrentSiteManager()
 
 
-class CrfModelMixin(models.Model):
+class CrfModelMixin(SiteModelMixin, models.Model):
+    on_site = CurrentSiteManager()
+
     @property
     def visit(self):
         return self.subject_visit

@@ -109,7 +109,7 @@ class ReferenceGetter:
                 **{k: v for k, v in self.visit_options.items() if v is not None},
             )
             try:
-                self._object = self.reference_model_cls.objects.get(**opts)
+                self._object = self.reference_model_cls.on_site.get(**opts)
             except ObjectDoesNotExist as e:
                 if self.create:
                     self._object = self.create_reference_obj()
