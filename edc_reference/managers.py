@@ -44,6 +44,8 @@ class ReferenceManager(models.Manager):
     def get_crf_for_visit(self, name=None, visit=None, field_name=None):
         """Returns an instance of reference model
         for this model on this visit for this field.
+
+        visit is a visit model instance.
         """
         try:
             model_obj = self.get(
@@ -63,6 +65,8 @@ class ReferenceManager(models.Manager):
     def get_requisition_for_visit(self, name=None, visit=None):
         """Returns an instance of reference model
         for this requisition on this visit for this panel.
+
+        visit is a visit model instance.
         """
         opts = dict(
             identifier=visit.subject_identifier,
