@@ -13,7 +13,6 @@ class AppConfig(DjangoAppConfig):
     include_in_administration_section = True
 
     def ready(self):
-        from .signals import reference_post_delete  # noqa
 
         sys.stdout.write(f"Loading {self.verbose_name} ...\n")
 
