@@ -429,7 +429,6 @@ class TestReferenceModel(TestCase):
         )
         self.assertEqual(reference.field_int, integer)
 
-    @tag("1")
     def test_reference_getter_without_using_model_obj(self):
         integer = 100
         crf_one = CrfOne.objects.create(
@@ -451,7 +450,6 @@ class TestReferenceModel(TestCase):
         reference = ReferenceGetter(**opts)
         self.assertEqual(reference.field_int, integer)
 
-    @tag("1")
     def test_reference_getter_without_using_model_obj_and_missing_visit_attr(self):
         integer = 100
         crf_one = CrfOne.objects.create(
@@ -472,7 +470,6 @@ class TestReferenceModel(TestCase):
         reference = ReferenceGetter(**opts)
         self.assertEqual(reference.field_int, integer)
 
-    @tag("1")
     def test_reference_getter_raises(self):
         """Assert raises if reference instance does not exist
         and not create.
@@ -485,7 +482,6 @@ class TestReferenceModel(TestCase):
         )
         self.assertRaises(ReferenceObjectDoesNotExist, ReferenceGetter, **opts)
 
-    @tag("1")
     def test_reference_getter_raises_missing_visit_attrs_on_create(self):
         """Assert raises if not all visit attrs are provided for create.
         """
@@ -504,7 +500,7 @@ class TestReferenceModel(TestCase):
         )
         self.assertRaises(
             ReferenceObjectDoesNotExist,
-            reference=ReferenceGetter,
+            ReferenceGetter,
             name="reference_app.crfone",
             field_name="blah",
             model_obj=crf_one,
@@ -516,13 +512,21 @@ class TestReferenceModel(TestCase):
         except ReferenceObjectDoesNotExist:
             pass
 
-    def test_reference_getter_doesnotexist(self):
+    def test_reference_getter_object_doesnotexist(self):
+        crf_one_obj = CrfOne.objects.create(
+            subject_visit=self.subject_visit,
+            field_str="erik",
+            field_int=100,
+            field_date=date.today(),
+            field_datetime=get_utcnow(),
+        )
         self.assertRaises(
             ReferenceObjectDoesNotExist,
-            reference=ReferenceGetter,
+            ReferenceGetter,
             field_name="blah",
-            model="reference_app.crfone",
-            model_obj=self.subject_visit,
+            model_obj=crf_one_obj,
+            visit_obj=self.subject_visit,
+            create=False,
         )
 
     def test_model_manager_crf(self):
