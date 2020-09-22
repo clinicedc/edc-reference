@@ -1,5 +1,7 @@
 from dateutil.relativedelta import relativedelta
 from decimal import Decimal
+
+from django.contrib.sites.models import Site
 from django.test import TestCase, tag
 from edc_appointment.models import Appointment
 from edc_reference.models import Reference
@@ -31,6 +33,7 @@ class TestLongitudinal(TestCase):
             subject_identifier=self.subject_identifier,
             identity="012345678",
             confirm_identity="012345678",
+            site=Site.objects.get_current(),
         )
 
         for index, days in [(1, 14), (2, 7), (3, 0)]:
@@ -42,12 +45,14 @@ class TestLongitudinal(TestCase):
                 schedule_name="schedule",
                 visit_code=f"{index}000",
                 timepoint=Decimal(f"{index-1}.0"),
+                site=Site.objects.get_current(),
             )
             SubjectVisit.objects.create(
                 appointment=appointment,
                 subject_identifier=self.subject_identifier,
                 report_datetime=dte - relativedelta(days=days),
                 reason=SCHEDULED,
+                site=Site.objects.get_current(),
             )
 
         for index, subject_visit in enumerate(
@@ -60,6 +65,7 @@ class TestLongitudinal(TestCase):
                 report_datetime=subject_visit.report_datetime,
                 field_str=values[index][0],
                 field_datetime=values[index][1],
+                site=Site.objects.get_current(),
             )
 
     def test_longitudinal_refsets(self):

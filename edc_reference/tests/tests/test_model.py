@@ -1,3 +1,5 @@
+import pdb
+
 from django.test import TestCase, tag
 from edc_reference.models import Reference
 from edc_utils import get_utcnow
@@ -13,7 +15,7 @@ class TestModel(TestCase):
 
     def test_model_update(self):
         reference = self.reference_model_cls.objects.create(
-            model=f"reference_app.testmodel",
+            model="reference_app.testmodel",
             identifier=self.subject_identifier,
             report_datetime=get_utcnow(),
             visit_schedule_name=self.visit_schedule_name,

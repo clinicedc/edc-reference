@@ -1,5 +1,7 @@
 from dateutil.relativedelta import relativedelta
 from decimal import Decimal
+
+from django.contrib.sites.models import Site
 from django.test import TestCase, tag
 from edc_appointment.models import Appointment
 from edc_constants.constants import NEG, POS
@@ -39,6 +41,7 @@ class TestRefset(TestCase):
                 schedule_name="schedule",
                 visit_code=f"{index}000",
                 timepoint=Decimal(f"{index-1}.0"),
+                site=Site.objects.get_current(),
             )
             self.subject_visits.append(
                 SubjectVisit.objects.create(
@@ -46,6 +49,7 @@ class TestRefset(TestCase):
                     subject_identifier=self.subject_identifier,
                     report_datetime=dte - relativedelta(days=days),
                     reason=SCHEDULED,
+                    site=Site.objects.get_current(),
                 )
             )
 
@@ -60,6 +64,7 @@ class TestRefset(TestCase):
                 field_str=values[index][0],
                 field_datetime=values[index][1],
                 field_date=values[index][1].date(),
+                site=Site.objects.get_current(),
             )
 
     def test_raises_model_not_in_site(self):

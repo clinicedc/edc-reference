@@ -1,6 +1,6 @@
 from dateutil.relativedelta import relativedelta
 from django.contrib.sites.models import Site
-from django.test import TestCase as BaseTestCase
+from django.test import override_settings, TestCase as BaseTestCase
 from edc_appointment.models import Appointment
 from edc_consent.site_consents import site_consents
 from edc_facility import import_holidays
@@ -14,6 +14,7 @@ from reference_app.models import SubjectVisit, SubjectConsent, OnSchedule
 from reference_app.visit_schedules import visit_schedule
 
 
+@override_settings(SITE_ID=10)
 class TestCase(BaseTestCase):
     @classmethod
     def setUpClass(cls):
@@ -59,6 +60,7 @@ class TestCase(BaseTestCase):
             consent_datetime=get_utcnow() - relativedelta(days=10),
             identity="123456789",
             confirm_identity="123456789",
+            site=Site.objects.get_current(),
         )
 
         on_schedule = OnSchedule.objects.create(
@@ -76,4 +78,5 @@ class TestCase(BaseTestCase):
             schedule_name="schedule",
             visit_code="1000",
             visit_code_sequence=0,
+            site=Site.objects.get_current(),
         )

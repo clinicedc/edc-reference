@@ -10,7 +10,7 @@ from edc_test_utils import DefaultTestSettings
 from os.path import abspath, dirname
 
 
-app_name = 'edc_reference'
+app_name = "edc_reference"
 base_dir = dirname(abspath(__file__))
 
 DEFAULT_SETTINGS = DefaultTestSettings(
@@ -30,13 +30,14 @@ DEFAULT_SETTINGS = DefaultTestSettings(
         "django_crypto_fields.apps.AppConfig",
         "django_revision.apps.AppConfig",
         "edc_consent.apps.AppConfig",
+        "edc_crf.apps.AppConfig",
         "edc_device.apps.AppConfig",
         "edc_lab.apps.AppConfig",
         "edc_metadata_rules.apps.AppConfig",
-        'edc_sites.apps.AppConfig',
+        "edc_sites.apps.AppConfig",
         "edc_protocol.apps.AppConfig",
         "edc_visit_schedule.apps.AppConfig",
-        'edc_randomization.apps.AppConfig',
+        "edc_randomization.apps.AppConfig",
         "edc_reference.apps.AppConfig",
         "edc_registration.apps.AppConfig",
         "edc_timepoint.apps.AppConfig",
@@ -54,10 +55,12 @@ def main():
     if not settings.configured:
         settings.configure(**DEFAULT_SETTINGS)
     django.setup()
-    tags = [t.split('=')[1] for t in sys.argv if t.startswith('--tag')]
-    failures = DiscoverRunner(failfast=False, tags=tags).run_tests(
-        [f'{app_name}.tests'])
-    sys.exit(failures)
+    tags = [t.split("=")[1] for t in sys.argv if t.startswith("--tag")]
+    failfast = True if [t for t in sys.argv if t == "--failfast"] else False
+    failures = DiscoverRunner(failfast=failfast, tags=tags).run_tests(
+        [f"{app_name}.tests"]
+    )
+    sys.exit(bool(failures))
 
 
 if __name__ == "__main__":

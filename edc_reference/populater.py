@@ -1,7 +1,6 @@
 import sys
 
 from django.apps import apps as django_apps
-from django.conf import settings
 from django.core.management.color import color_style
 from tqdm import tqdm
 
@@ -49,17 +48,15 @@ class Populater:
         for name in self.names:
             reference_model = site_reference_configs.get_reference_model(name=name)
             reference_model_cls = django_apps.get_model(reference_model)
-            count = reference_model_cls.on_site.filter(model=name).count()
+            count = reference_model_cls.objects.filter(model=name).count()
             sys.stdout.write(f" * {name}: {count} records\n")
 
     def populate(self):
-        """Populates or re-populates model `Reference` for the
-        current site.
+        """Populates or re-populates model `Reference`.
         """
         if self.dry_run:
             self.reference_updater_cls = DryRunDummy
-        sys.stdout.write(style.MIGRATE_HEADING(f"Populating reference model.\n"))
-        sys.stdout.write(f" - Current site is {settings.SITE_ID}\n")
+        sys.stdout.write(style.MIGRATE_HEADING("Populating reference model.\n"))
         sys.stdout.write(
             f" - found {len(site_reference_configs.registry)} reference names in registry.\n"
         )
@@ -67,10 +64,10 @@ class Populater:
             f" - running for {len(self.names)} selected reference names.\n"
         )
         if self.skip_existing:
-            sys.stdout.write(f" - skipping reference names with existing references\n")
+            sys.stdout.write(" - skipping reference names with existing references\n")
         if self.dry_run:
             sys.stdout.write(
-                f" - This is a dry run. No data will be created/modified.\n"
+                " - This is a dry run. No data will be created/modified.\n"
             )
 
         if self.delete_existing:
@@ -78,11 +75,11 @@ class Populater:
 
         self.update_references()
 
-        sys.stdout.write(f"Done (Site {settings.SITE_ID}).\n")
+        sys.stdout.write("Done.\n")
 
     def update_references(self):
         """Create or Update all Reference instances for
-        model names from this sites reference_configs.
+        model names from reference_configs.
         """
         for name in self.names:
             qs = self.get_queryset(name)
@@ -98,17 +95,16 @@ class Populater:
 
     def delete_existing_references(self):
         """Delete existing `Reference` model instances for
-        model names from this sites reference_configs.
+        model names from reference_configs.
         """
-        sys.stdout.write(f" * deleting existing records ... \r")
+        sys.stdout.write(" * deleting existing records ... \r")
         if not self.dry_run:
             for name in self.names:
-                self.reference_model_cls.on_site.filter(model=name).delete()
-        sys.stdout.write(f" * deleting existing records ... done.\n")
+                self.reference_model_cls.objects.filter(model=name).delete()
+        sys.stdout.write(" * deleting existing records ... done.\n")
 
     def verify_names(self, names):
-        """Returns a list of model names from the sites
-        reference_configs.
+        """Returns a list of model names from reference_configs.
 
         Format is `app_label.model_name` or
         `app_label.model_name.panel_name`.
@@ -134,8 +130,9 @@ class Populater:
             )
         return names_registered
 
-    def get_queryset(self, name=None):
-        """Returns a QuerySet filter for this site given the
+    @staticmethod
+    def get_queryset(name=None):
+        """Returns a QuerySet filter given the
         `app_label.model_name` or `app_label.model_name.panel_name`.
         """
         try:
@@ -145,14 +142,14 @@ class Populater:
             app_label, model_name = name.split(".")
         model_cls = django_apps.get_model(app_label, model_name)
         if panel_name:
-            qs = model_cls.on_site.filter(panel__name=panel_name)
+            qs = model_cls.objects.filter(panel__name=panel_name)
         else:
-            qs = model_cls.on_site.all()
+            qs = model_cls.objects.all()
         return qs
 
     def skip(self, name=None):
         if self.skip_existing:
             reference_model = site_reference_configs.get_reference_model(name=name)
             reference_model_cls = django_apps.get_model(reference_model)
-            return reference_model_cls.on_site.filter(model=name).exists()
+            return reference_model_cls.objects.filter(model=name).exists()
         return False
