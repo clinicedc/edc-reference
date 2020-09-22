@@ -13,6 +13,6 @@ def check_site_reference_configs(app_configs, **kwargs):
     errors = []
     site_results = site_reference_configs.check()
     for result in site_results.values():
-        errors.append(Warning(result, id=f"edc_reference.001"))
+        errors.append(Warning(result, id="edc_reference.001"))
     sys.stdout.write(style.SQL_KEYWORD("check_site_reference_configs ... done.\n"))
     return errors

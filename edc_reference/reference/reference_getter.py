@@ -41,7 +41,6 @@ class ReferenceGetter:
 
         self.create = create
         self.field_name = field_name
-
         if model_obj:
             try:
                 # given a crf model as model_obj
@@ -53,6 +52,7 @@ class ReferenceGetter:
                 self.visit_code_sequence = model_obj.visit.visit_code_sequence
                 self.timepoint = model_obj.visit.timepoint
                 self.name = model_obj.reference_name
+                self.site = model_obj.site
             except AttributeError:
                 # given a visit model as model_obj
                 self.subject_identifier = model_obj.subject_identifier
@@ -63,6 +63,7 @@ class ReferenceGetter:
                 self.visit_code_sequence = model_obj.visit_code_sequence
                 self.timepoint = model_obj.timepoint
                 self.name = model_obj.reference_name
+                self.site = model_obj.site
         elif visit_obj:
             self.name = name
             self.subject_identifier = visit_obj.subject_identifier
@@ -72,6 +73,7 @@ class ReferenceGetter:
             self.visit_code = visit_obj.visit_code
             self.visit_code_sequence = visit_obj.visit_code_sequence
             self.timepoint = visit_obj.timepoint
+            self.site = visit_obj.site
         else:
             # given only the attrs
             self.name = name
@@ -82,6 +84,7 @@ class ReferenceGetter:
             self.visit_code = visit_code
             self.visit_code_sequence = visit_code_sequence
             self.timepoint = timepoint
+            self.site = None
 
         reference_model = site_reference_configs.get_reference_model(name=self.name)
         self.reference_model_cls = django_apps.get_model(reference_model)
@@ -109,7 +112,7 @@ class ReferenceGetter:
                 **{k: v for k, v in self.visit_options.items() if v is not None},
             )
             try:
-                self._object = self.reference_model_cls.on_site.get(**opts)
+                self._object = self.reference_model_cls.objects.get(**opts)
             except ObjectDoesNotExist as e:
                 if self.create:
                     self._object = self.create_reference_obj()
@@ -134,13 +137,17 @@ class ReferenceGetter:
     def visit_options(self):
         """Returns a dictionary of query options of the visit attrs.
         """
-        return dict(
+        opts = {}
+        if self.site:
+            opts.update(site=self.site)
+        opts.update(
             visit_schedule_name=self.visit_schedule_name,
             schedule_name=self.schedule_name,
             visit_code=self.visit_code,
             visit_code_sequence=self.visit_code_sequence,
             timepoint=self.timepoint,
         )
+        return opts
 
     def create_reference_obj(self):
         """Returns a newly create reference instance.

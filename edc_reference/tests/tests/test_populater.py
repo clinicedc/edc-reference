@@ -1,5 +1,7 @@
 from dateutil.relativedelta import relativedelta
 from decimal import Decimal
+
+from django.contrib.sites.models import Site
 from django.core.exceptions import ObjectDoesNotExist
 from django.test import TestCase, tag
 from edc_appointment.models import Appointment
@@ -22,6 +24,7 @@ class TestPopulater(TestCase):
             subject_identifier=self.subject_identifier,
             identity="012345678",
             confirm_identity="012345678",
+            site=Site.objects.get_current(),
         )
 
         appointment1 = Appointment.objects.create(
@@ -32,6 +35,7 @@ class TestPopulater(TestCase):
             schedule_name="schedule",
             visit_code="1000",
             timepoint=Decimal("1.0"),
+            site=Site.objects.get_current(),
         )
 
         appointment2 = Appointment.objects.create(
@@ -42,12 +46,14 @@ class TestPopulater(TestCase):
             schedule_name="schedule",
             visit_code="2000",
             timepoint=Decimal("2.0"),
+            site=Site.objects.get_current(),
         )
 
         self.subject_visit1 = SubjectVisit.objects.create(
             appointment=appointment1,
             report_datetime=appointment1.appt_datetime,
             reason=SCHEDULED,
+            site=Site.objects.get_current(),
         )
 
         CrfOne.objects.create(
@@ -56,12 +62,14 @@ class TestPopulater(TestCase):
             field_datetime=self.subject_visit1.report_datetime,
             field_int=1,
             field_str="erik",
+            site=Site.objects.get_current(),
         )
 
         self.subject_visit2 = SubjectVisit.objects.create(
             appointment=appointment2,
             report_datetime=appointment2.appt_datetime,
             reason=SCHEDULED,
+            site=Site.objects.get_current(),
         )
         CrfOne.objects.create(
             subject_visit=self.subject_visit2,
@@ -69,6 +77,7 @@ class TestPopulater(TestCase):
             field_datetime=self.subject_visit2.report_datetime,
             field_int=1,
             field_str="erik",
+            site=Site.objects.get_current(),
         )
 
     def test_populates_for_visit(self):

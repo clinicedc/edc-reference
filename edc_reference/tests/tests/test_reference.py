@@ -1,6 +1,8 @@
 from datetime import date
 from dateutil.relativedelta import relativedelta
 from decimal import Decimal
+
+from django.contrib.sites.models import Site
 from django.core.exceptions import ObjectDoesNotExist
 from django.test import TestCase, tag
 from edc_appointment.models import Appointment
@@ -42,6 +44,7 @@ class TestReferenceModel(TestCase):
             subject_identifier=self.subject_identifier,
             identity="012345678",
             confirm_identity="012345678",
+            site=Site.objects.get_current(),
         )
 
         appointment = Appointment.objects.create(
@@ -52,10 +55,11 @@ class TestReferenceModel(TestCase):
             schedule_name="schedule",
             visit_code="1000",
             timepoint=Decimal("1.0"),
+            site=Site.objects.get_current(),
         )
 
         self.subject_visit = SubjectVisit.objects.create(
-            appointment=appointment, reason=SCHEDULED
+            appointment=appointment, reason=SCHEDULED, site=Site.objects.get_current(),
         )
 
     def reset_site_reference_configs(self):
