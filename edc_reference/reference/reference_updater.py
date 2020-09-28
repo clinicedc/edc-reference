@@ -59,9 +59,6 @@ class ReferenceUpdater:
                 internal_type = "UUIDField"
                 related_name = getattr(model_obj, field_name)._meta.label_lower
             reference_getter.object.update_value(
-                internal_type=internal_type,
-                value=value,
-                related_name=related_name,
-                site=model_obj.site,
+                internal_type=internal_type, value=value, related_name=related_name,
             )
             reference_getter.object.save()
