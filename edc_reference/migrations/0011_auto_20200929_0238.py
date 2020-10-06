@@ -6,17 +6,10 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('edc_reference', '0010_auto_20191024_1000'),
+        ("edc_reference", "0010_auto_20191024_1000"),
     ]
 
     operations = [
-        migrations.AlterModelManagers(
-            name='reference',
-            managers=[
-            ],
-        ),
-        migrations.RemoveField(
-            model_name='reference',
-            name='site',
-        ),
+        migrations.AlterModelManagers(name="reference", managers=[],),
+        migrations.RemoveField(model_name="reference", name="site",),
     ]
