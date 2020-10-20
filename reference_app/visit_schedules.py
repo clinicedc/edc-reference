@@ -5,8 +5,7 @@ from edc_visit_schedule.visit_schedule import VisitSchedule
 from edc_visit_schedule.site_visit_schedules import site_visit_schedules
 
 
-crfs = FormsCollection(
-    Crf(show_order=1, model=f"reference_app.crfone", required=True))
+crfs = FormsCollection(Crf(show_order=1, model=f"reference_app.crfone", required=True))
 
 
 visit0 = Visit(
@@ -25,7 +24,7 @@ visit1 = Visit(
     title="Day 2",
     timepoint=1,
     rbase=relativedelta(days=7),
-    rlower=relativedelta(days=0),
+    rlower=relativedelta(days=6),
     rupper=relativedelta(days=6),
     crfs=crfs,
     facility_name="default",
@@ -36,7 +35,7 @@ visit2 = Visit(
     title="Day 3",
     timepoint=2,
     rbase=relativedelta(days=14),
-    rlower=relativedelta(days=0),
+    rlower=relativedelta(days=6),
     rupper=relativedelta(days=6),
     crfs=crfs,
     facility_name="default",

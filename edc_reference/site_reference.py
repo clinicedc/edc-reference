@@ -187,6 +187,13 @@ class SiteReference:
                 )
                 self._register_if_new(reference)
                 for visit in schedule.visits.values():
+                    for crf in visit.crfs_missed:
+                        reference = self.reference_updater.update(
+                            name=crf.model,
+                            fields=["report_datetime"],
+                            get_config=self.get_config,
+                        )
+                        self._register_if_new(reference)
                     for crf in visit.all_crfs:
                         reference = self.reference_updater.update(
                             name=crf.model,
