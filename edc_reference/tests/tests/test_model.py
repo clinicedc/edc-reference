@@ -1,5 +1,3 @@
-import pdb
-
 from django.test import TestCase, tag
 from edc_reference.models import Reference
 from edc_utils import get_utcnow
