@@ -1,12 +1,10 @@
-from django.contrib.admin.sites import AdminSite
+from edc_model_admin.admin_site import EdcAdminSite
 
 
-class EdcReferenceAdminSite(AdminSite):
+class AdminSite(EdcAdminSite):
     site_header = "Edc Reference"
     site_title = "Edc Reference"
     index_title = "Edc Reference"
-    site_url = "/administration/"
 
 
-edc_reference_admin = EdcReferenceAdminSite(name="edc_reference_admin")
-edc_reference_admin.disable_action("delete_selected")
+edc_reference_admin = AdminSite(name="edc_reference_admin")
